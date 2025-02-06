@@ -4,6 +4,9 @@
 TagManager:
   serializedVersion: 3
   tags:
+  - BeforeLineUpPlane1
+  - BeforeLineUpPlane2
+  - BeforeLineUpPlane3
   - BeforeLineUpPlane
   layers:
   - Default

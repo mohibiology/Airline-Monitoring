@@ -4,23 +4,23 @@ using System.Collections.Generic;
 
 public class ClickToShowButtons : MonoBehaviour
 {
-    [SerializeField] private Camera playerCamera;  
+    [SerializeField] private Camera playerCamera;
 
     [System.Serializable]
     public class ButtonMapping
     {
-        public string tag;            // Object's tag (e.g., "NPC", "Chest", "Enemy")
-        public List<Button> uiButtons; // List of UI buttons for that object
+        public string tag;
+        public List<Button> uiButtons;
     }
 
     [SerializeField] private List<ButtonMapping> buttonMappings = new List<ButtonMapping>();
 
     private Dictionary<string, List<Button>> buttonDictionary = new Dictionary<string, List<Button>>();
-    private List<Button> lastActiveButtons = new List<Button>(); // Stores last active buttons
+    private List<Button> lastActiveButtons = new List<Button>();
+    private GameObject lastClickedObject = null; // Store last clicked object
 
     void Start()
     {
-        // Convert List to Dictionary for fast lookups
         foreach (var mapping in buttonMappings)
         {
             if (!buttonDictionary.ContainsKey(mapping.tag))
@@ -28,7 +28,8 @@ public class ClickToShowButtons : MonoBehaviour
                 buttonDictionary.Add(mapping.tag, mapping.uiButtons);
                 foreach (var button in mapping.uiButtons)
                 {
-                    button.gameObject.SetActive(false); // Hide all buttons at start
+                    button.gameObject.SetActive(false);
+                    button.onClick.AddListener(() => OnButtonClick(mapping.tag));
                 }
             }
         }
@@ -45,17 +46,18 @@ public class ClickToShowButtons : MonoBehaviour
             {
                 string hitTag = hit.collider.tag;
 
-                if (buttonDictionary.ContainsKey(hitTag)) // Check if buttons exist for this tag
+                if (buttonDictionary.ContainsKey(hitTag))
                 {
-                    // Hide previous buttons
                     HideLastButtons();
+                    lastClickedObject = hit.collider.gameObject;
 
-                    // Show new buttons
                     foreach (var button in buttonDictionary[hitTag])
                     {
                         button.gameObject.SetActive(true);
-                        lastActiveButtons.Add(button); // Store active buttons
+                        lastActiveButtons.Add(button);
                     }
+
+                    MouseControl.canMoveCamera = false; // ✅ Disable camera movement
                 }
                 else
                 {
@@ -76,5 +78,16 @@ public class ClickToShowButtons : MonoBehaviour
             button.gameObject.SetActive(false);
         }
         lastActiveButtons.Clear();
+
+        MouseControl.canMoveCamera = true; // ✅ Re-enable camera movement when buttons are hidden
+    }
+
+    void OnButtonClick(string tag)
+    {
+        if (lastClickedObject != null)
+        {
+            ObjectActionHandler.Instance.PerformAction(lastClickedObject, tag);
+            HideLastButtons();
+        }
     }
 }
