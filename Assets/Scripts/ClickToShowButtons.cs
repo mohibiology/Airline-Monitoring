@@ -26,18 +26,18 @@ public class ClickToShowButtons : MonoBehaviour
             if (!buttonDictionary.ContainsKey(mapping.tag))
             {
                 buttonDictionary.Add(mapping.tag, mapping.uiButtons);
-                foreach (var button in mapping.uiButtons)
-                {
-                    button.gameObject.SetActive(false);
-                    button.onClick.AddListener(() => OnButtonClick(mapping.tag));
-                }
+            }
+
+            foreach (var button in mapping.uiButtons)
+            {
+                button.gameObject.SetActive(false);
             }
         }
     }
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0)) // Left-click
+        if (Input.GetMouseButtonDown(0)) 
         {
             Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
@@ -45,19 +45,27 @@ public class ClickToShowButtons : MonoBehaviour
             if (Physics.Raycast(ray, out hit))
             {
                 string hitTag = hit.collider.tag;
+                Debug.Log($"🖱 Clicked on: {hit.collider.gameObject.name}, Tag: {hitTag}");
 
                 if (buttonDictionary.ContainsKey(hitTag))
                 {
                     HideLastButtons();
                     lastClickedObject = hit.collider.gameObject;
 
+                    Debug.Log($"📌 Stored lastClickedObject: {lastClickedObject.name}, Tag: {lastClickedObject.tag}");
+
+                    // ✅ Store the correct tag at the moment of clicking
                     foreach (var button in buttonDictionary[hitTag])
                     {
                         button.gameObject.SetActive(true);
                         lastActiveButtons.Add(button);
+
+                        // ✅ Remove previous listeners to avoid duplicate calls
+                        button.onClick.RemoveAllListeners();
+                        button.onClick.AddListener(() => OnButtonClick(lastClickedObject.tag));
                     }
 
-                    MouseControl.canMoveCamera = false; // ✅ Disable camera movement
+                    MouseControl.canMoveCamera = false;
                 }
                 else
                 {
@@ -70,6 +78,8 @@ public class ClickToShowButtons : MonoBehaviour
             }
         }
     }
+
+
 
     void HideLastButtons()
     {
@@ -86,6 +96,7 @@ public class ClickToShowButtons : MonoBehaviour
     {
         if (lastClickedObject != null)
         {
+            Debug.Log($"🔘 Button Clicked! Received Tag: {tag}, Object's Actual Tag: {lastClickedObject.tag}");
             ObjectActionHandler.Instance.PerformAction(lastClickedObject, tag);
             HideLastButtons();
         }
