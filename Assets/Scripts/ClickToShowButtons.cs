@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 public class ClickToShowButtons : MonoBehaviour
 {
@@ -37,7 +38,7 @@ public class ClickToShowButtons : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0)) 
+        if (Input.GetMouseButtonDown(0) && !IsPointerOverUI()) 
         {
             Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
@@ -94,11 +95,19 @@ public class ClickToShowButtons : MonoBehaviour
 
     void OnButtonClick(string tag)
     {
-        if (lastClickedObject != null)
+        if (lastClickedObject != null) 
         {
-            Debug.Log($"🔘 Button Clicked! Received Tag: {tag}, Object's Actual Tag: {lastClickedObject.tag}");
             ObjectActionHandler.Instance.PerformAction(lastClickedObject, tag);
+            Debug.Log($"🔘 Button Clicked! Triggering Action for: {lastClickedObject.name}, Tag: {tag}");
             HideLastButtons();
         }
+        else
+        {
+            Debug.LogError($"⚠️ Button Clicked, but no object is stored!");
+        }
+    }
+    private bool IsPointerOverUI()
+    {
+        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
     }
 }
