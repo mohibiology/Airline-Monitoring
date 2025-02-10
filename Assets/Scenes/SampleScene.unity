@@ -344,8 +344,8 @@ Transform:
   m_GameObject: {fileID: 63110758}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 120, y: 1, z: 200}
+  m_LocalPosition: {x: 0, y: 0, z: -165.2}
+  m_LocalScale: {x: 120, y: 1, z: 250}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1976202946}
@@ -585,6 +585,10 @@ PrefabInstance:
     - target: {fileID: 3902006642810780434, guid: d61d7cda22f4d5f429cd9be6dc5a7554, type: 3}
       propertyPath: m_Name
       value: Airplane 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5906464816309977739, guid: d61d7cda22f4d5f429cd9be6dc5a7554, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6262904141483315370, guid: d61d7cda22f4d5f429cd9be6dc5a7554, type: 3}
       propertyPath: m_LocalScale.x
@@ -2835,9 +2839,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3e04c11fd63e0a499114a42b79b7faf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotationSpeed: 0.1
-  moveSpeed: 0.07
-  finalMoveSpeed: 0.01
+  rotationSpeed: 1
+  moveSpeed: 1
+  finalMoveSpeed: 1
   rotationOnYaxis: 270
   positionOnXaxis: -70
   planeSpacing: -100
@@ -2867,7 +2871,7 @@ Transform:
   m_GameObject: {fileID: 1638969855}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -234.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2900,6 +2904,8 @@ GameObject:
   - component: {fileID: 1691595929}
   - component: {fileID: 1691595928}
   - component: {fileID: 1691595927}
+  - component: {fileID: 1691595931}
+  - component: {fileID: 1691595932}
   m_Layer: 0
   m_Name: Trigger Object
   m_TagString: Untagged
@@ -2935,7 +2941,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1691595926}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -2951,7 +2957,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 444e0fb1617b72040aec559e8b04afbc, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2990,12 +2996,51 @@ Transform:
   m_GameObject: {fileID: 1691595926}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -70, y: 0, z: -851.4}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: -70, y: 11.6, z: -1085}
+  m_LocalScale: {x: 20, y: 20, z: 20}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &1691595931
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1691595926}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 126
+  m_CollisionDetection: 0
+--- !u!114 &1691595932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1691595926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0536ba08593a344469f1632c71c8f0b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1700645814
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3508,6 +3553,12 @@ MonoBehaviour:
   - tag: BeforeLineUpPlane3
     uiButtons:
     - {fileID: 27211867}
+  - tag: BeforeTakeOffPlane
+    uiButtons:
+    - {fileID: 128183109}
+    - {fileID: 896098171}
+    - {fileID: 877832684}
+    - {fileID: 1048515999}
 --- !u!1001 &1921754835
 PrefabInstance:
   m_ObjectHideFlags: 0

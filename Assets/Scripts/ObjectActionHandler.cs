@@ -45,25 +45,37 @@ public class ObjectActionHandler : MonoBehaviour
         if (tag == "BeforeLineUpPlane1")
         {
             targetPosition = new Vector3(positionOnXaxis, 0, -300);
-        }
-        else if (tag == "BeforeLineUpPlane2")
-        {
-            targetPosition = new Vector3(positionOnXaxis, 0, -525);
-        }
-        else if (tag == "BeforeLineUpPlane3")
-        {
-            targetPosition = new Vector3(positionOnXaxis, 0, -750);
-        }
-
-        StartCoroutine(RotateMoveRotate(targetObject, 
+            StartCoroutine(RotateMoveRotate(targetObject, 
             Quaternion.Euler(0, rotationOnYaxis, 0), 
             targetPosition,
             rotationBeforeGettingIntoLane, 
             () => AlignPlanesSmoothly())); // ✅ Step 4: Smoothly align planes
+        }
+        else if (tag == "BeforeLineUpPlane2")
+        {
+            targetPosition = new Vector3(positionOnXaxis, 0, -525);
+            StartCoroutine(RotateMoveRotate(targetObject, 
+            Quaternion.Euler(0, rotationOnYaxis, 0), 
+            targetPosition,
+            rotationBeforeGettingIntoLane, 
+            () => AlignPlanesSmoothly())); // ✅ Step 4: Smoothly align planes
+        }
+        else if (tag == "BeforeLineUpPlane3")
+        {
+            targetPosition = new Vector3(positionOnXaxis, 0, -750);
+            StartCoroutine(RotateMoveRotate(targetObject, 
+            Quaternion.Euler(0, rotationOnYaxis, 0), 
+            targetPosition,
+            rotationBeforeGettingIntoLane, 
+            () => AlignPlanesSmoothly())); // ✅ Step 4: Smoothly align planes
+        }
+
+        
     }
 
     private IEnumerator RotateMoveRotate(GameObject targetObject, Quaternion firstRotation, Vector3 targetPosition, Quaternion finalRotation, System.Action onComplete)
     {
+        targetObject.tag="Processing";
         Quaternion initialRotation = targetObject.transform.rotation;
         float elapsedTime = 0f;
 

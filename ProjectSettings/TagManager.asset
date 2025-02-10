@@ -8,6 +8,8 @@ TagManager:
   - BeforeLineUpPlane2
   - BeforeLineUpPlane3
   - BeforeLineUpPlane
+  - BeforeTakeOffPlane
+  - Processing
   layers:
   - Default
   - TransparentFX
