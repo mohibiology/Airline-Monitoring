@@ -10,6 +10,7 @@ TagManager:
   - BeforeLineUpPlane
   - BeforeTakeOffPlane
   - Processing
+  - BeforeOnTheLinePlane
   layers:
   - Default
   - TransparentFX

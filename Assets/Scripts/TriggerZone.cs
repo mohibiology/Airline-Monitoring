@@ -8,6 +8,9 @@ public class TriggerZone : MonoBehaviour
         {
             Debug.Log($"🚀 Triggered by: {other.gameObject.name}");
             other.gameObject.tag = "BeforeTakeOffPlane";
+
+            // ✅ Set the triggered plane for the button action
+            ObjectActionHandler.Instance.SetTriggeredPlane(other.gameObject);
         }
     }
 }
