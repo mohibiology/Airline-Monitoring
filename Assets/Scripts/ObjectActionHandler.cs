@@ -16,6 +16,7 @@ public class ObjectActionHandler : MonoBehaviour
     private Quaternion rotationBeforeGettingIntoLane = Quaternion.Euler(0, 180f, 0);
     private List<GameObject> planeQueue = new List<GameObject>(); // ✅ Store planes dynamically
     [SerializeField] Transform triggerObject; // ✅ Reference to trigger object
+    [SerializeField] Transform triggerObjectBeforeTakeOff;
 
     private GameObject currentTriggeredPlane;
     string movingPlaneTag = "BeforeOnTheLinePlane";
@@ -42,7 +43,7 @@ public class ObjectActionHandler : MonoBehaviour
 
     public void PerformAction(GameObject targetObject, string tag)
     {
-        if (!planeQueue.Contains(targetObject))
+        if (!planeQueue.Contains(targetObject) && tag!="Player")
         {
             RegisterPlane(targetObject);
         }
@@ -97,6 +98,34 @@ public class ObjectActionHandler : MonoBehaviour
 
     }
 
+    public void PerformAction(GameObject targetObject, string tag, string buttonType)
+    {
+        if (!planeQueue.Contains(targetObject) && tag!="Player")
+        {
+            RegisterPlane(targetObject);
+        }
+
+        if (buttonType == "Line Up" && tag == "BeforeOnTheLinePlane")
+        {
+            AlignAndRotatePlanesSmoothly(); // ✅ Special logic for the "Line Up" button
+        }
+        // else if (buttonType == "TakeOff" && tag == "BeforeTakeOffPlane" && !AnyPlaneIsMoving())
+        // {
+        //     if (currentTriggeredPlane != null)
+        //     {
+        //         Vector3 targetPosition = new Vector3(-260f, 0, currentTriggeredPlane.transform.position.z);
+
+        //         if (planeQueue.Contains(currentTriggeredPlane))
+        //         {
+        //             planeQueue.Remove(currentTriggeredPlane);
+        //         }
+
+        //         StartCoroutine(RotateMoveSimultaneously(currentTriggeredPlane, targetPosition, () => AlignPlanesSmoothly()));
+        //     }
+        // }
+    }
+
+
 
     private IEnumerator RotateMoveSimultaneously(GameObject targetObject, Vector3 targetPosition, System.Action onComplete)
     {
@@ -107,21 +136,27 @@ public class ObjectActionHandler : MonoBehaviour
 
         while (elapsedTime < 1f)
         {
-            // ✅ Rotate faster than movement
-            targetObject.transform.rotation = Quaternion.Slerp(startRotation, targetRotation, elapsedTime * 10); // Faster rotation
-            targetObject.transform.position = Vector3.Lerp(startPosition, targetPosition, elapsedTime); // Normal movement
+            targetObject.transform.rotation = Quaternion.Slerp(startRotation, targetRotation, elapsedTime * 10);
+            targetObject.transform.position = Vector3.Lerp(startPosition, targetPosition, elapsedTime);
 
             elapsedTime += Time.deltaTime * moveSpeed;
             yield return null;
         }
 
-        // ✅ Ensure final position and rotation are exact
         targetObject.transform.rotation = targetRotation;
         targetObject.transform.position = targetPosition;
         targetObject.tag = "BeforeOnTheLinePlane";
 
+        // ✅ Remove from queue *before* calling alignment
+        if (planeQueue.Contains(targetObject))
+        {
+            planeQueue.Remove(targetObject);
+        }
+
+        UpdateAlignedPlanes(targetObject);
         onComplete?.Invoke(); // ✅ Call next step
     }
+
 
 
     private IEnumerator RotateMoveRotate(GameObject targetObject, Quaternion firstRotation, Vector3 targetPosition, Quaternion finalRotation, System.Action onComplete)
@@ -173,34 +208,158 @@ public class ObjectActionHandler : MonoBehaviour
         StartCoroutine(SmoothMovePlanes(firstPlanePosition));
     }
 
-    private IEnumerator SmoothMovePlanes(Vector3 firstPlanePosition)
+   private IEnumerator SmoothMovePlanes(Vector3 firstPlanePosition)
     {
+        if (planeQueue.Count == 0) yield break; // ✅ Avoid running when no planes exist
+
+        // ✅ Exclude planes that are already aligned (BeforeOnTheLinePlane)
+        List<GameObject> movingPlanes = new List<GameObject>();
+        foreach (var plane in planeQueue)
+        {
+            if (!plane.CompareTag("Player"))
+            {
+                movingPlanes.Add(plane);
+            }
+        }
+
+        if (movingPlanes.Count == 0) yield break; // ✅ No valid planes to move
+
         List<Vector3> targetPositions = new List<Vector3>();
 
-        // ✅ Determine new positions for planes
-        for (int i = 0; i < planeQueue.Count; i++)
+        // ✅ Determine target positions only for valid planes
+        for (int i = 0; i < movingPlanes.Count; i++)
         {
             Vector3 newPosition = new Vector3(
                 positionOnXaxis,
                 firstPlanePosition.y,
-                firstPlanePosition.z - (i * planeSpacing) // ✅ Ensures planes move sequentially
+                firstPlanePosition.z - (i * planeSpacing) // ✅ Ensures correct spacing
             );
             targetPositions.Add(newPosition);
         }
 
         float elapsedTime = 0f;
-        float duration = 2.5f; // ✅ Increased duration for slower movement (adjust as needed)
+        float duration = 2.5f; // ✅ Increased duration for smoother movement
+
+    while (elapsedTime < duration)
+    {
+        float t = Mathf.SmoothStep(0, 1, elapsedTime / duration); // ✅ Smooth transition
+
+        for (int i = 0; i < movingPlanes.Count; i++)
+        {
+            if (i < targetPositions.Count)
+            {
+                movingPlanes[i].transform.position = Vector3.Lerp(
+                    movingPlanes[i].transform.position, 
+                    targetPositions[i], 
+                    t
+                );
+            }
+        }
+
+        elapsedTime += Time.deltaTime;
+        yield return null;
+    }
+
+    // ✅ Ensure exact final positions
+    for (int i = 0; i < movingPlanes.Count; i++)
+    {
+        if (i < targetPositions.Count)
+        {
+            movingPlanes[i].transform.position = targetPositions[i];
+        }
+    }
+}
+
+    private void AlignAndRotatePlanesSmoothly()
+    {
+        if (triggerObjectBeforeTakeOff == null) return;
+
+        Vector3 firstPlanePosition = triggerObjectBeforeTakeOff.position;
+        StartCoroutine(SmoothRotateAndMovePlanes(firstPlanePosition));
+    }
+
+    private List<GameObject> alignedPlaneQueue = new List<GameObject>(); // ✅ Queue for aligned planes
+    public void UpdateAlignedPlanes(GameObject plane)
+    {
+        if (plane.CompareTag("BeforeOnTheLinePlane"))
+        {
+            if (planeQueue.Contains(plane))
+            {
+                planeQueue.Remove(plane); // ✅ Remove from queue to prevent unwanted movement
+            }
+
+            if (!alignedPlaneQueue.Contains(plane))
+            {
+                alignedPlaneQueue.Add(plane); // ✅ Add to aligned queue if needed
+            }
+        }
+    }
+
+    private IEnumerator SmoothRotateAndMovePlanes(Vector3 firstPlanePosition)
+    {
+        if (alignedPlaneQueue.Count == 0) yield break;
+
+        List<GameObject> rotatingPlanes = new List<GameObject>(alignedPlaneQueue);
+        alignedPlaneQueue.Clear(); 
+
+        Dictionary<GameObject, Quaternion> targetRotations = new Dictionary<GameObject, Quaternion>();
+        List<Vector3> targetPositions = new List<Vector3>();
+
+        // ✅ Make sure the first plane is correctly positioned
+        Vector3 leaderPlanePosition = firstPlanePosition; 
+
+        for (int i = 0; i < rotatingPlanes.Count; i++)
+        {
+            GameObject plane = rotatingPlanes[i];
+
+            targetRotations[plane] = Quaternion.Euler(0, 360f, 0);
+
+            Vector3 newPosition;
+            if (i == 0)
+            {
+                // ✅ First plane should stay at its given position
+                newPosition = leaderPlanePosition;
+            }
+            else
+            {
+                // ✅ Next planes should position **behind** the first plane
+                newPosition = new Vector3(
+                    leaderPlanePosition.x,
+                    leaderPlanePosition.y,
+                    targetPositions[i - 1].z - planeSpacing // 🔥 Ensures sequential spacing
+                );
+            }
+
+            targetPositions.Add(newPosition);
+            plane.tag = "Player";
+
+            Debug.Log($"Plane {i} target position: {newPosition}"); // 🔍 Debugging output
+        }
+
+        float elapsedTime = 0f;
+        float duration = 2.5f;
 
         while (elapsedTime < duration)
         {
-            float t = elapsedTime / duration; // ✅ Normalize time (0 to 1)
-            t = Mathf.SmoothStep(0, 1, t); // ✅ Smooth out movement for a more natural effect
+            float t = elapsedTime / duration; // ✅ Use linear interpolation for better control
 
-            for (int i = 0; i < planeQueue.Count; i++)
+            for (int i = 0; i < rotatingPlanes.Count; i++)
             {
+                GameObject plane = rotatingPlanes[i];
+
                 if (i < targetPositions.Count)
                 {
-                    planeQueue[i].transform.position = Vector3.Lerp(planeQueue[i].transform.position, targetPositions[i], t);
+                    Vector3 startPos = plane.transform.position;
+                    Vector3 endPos = targetPositions[i];
+
+                    plane.transform.position = Vector3.Lerp(startPos, endPos, t);
+                }
+
+                if (targetRotations.ContainsKey(plane))
+                {
+                    plane.transform.rotation = Quaternion.Slerp(
+                        plane.transform.rotation, targetRotations[plane], t * 2
+                    );
                 }
             }
 
@@ -208,15 +367,23 @@ public class ObjectActionHandler : MonoBehaviour
             yield return null;
         }
 
-        // ✅ Ensure final positions are set exactly
-        for (int i = 0; i < planeQueue.Count; i++)
+        // ✅ Ensure planes snap to correct positions
+        for (int i = 0; i < rotatingPlanes.Count; i++)
         {
-            if (i < targetPositions.Count)
+            rotatingPlanes[i].transform.position = targetPositions[i];
+
+            if (targetRotations.ContainsKey(rotatingPlanes[i]))
             {
-                planeQueue[i].transform.position = targetPositions[i];
+                rotatingPlanes[i].transform.rotation = targetRotations[rotatingPlanes[i]];
             }
         }
     }
+
+
+
+
+
+
 
     private bool AnyPlaneIsMoving()
     {

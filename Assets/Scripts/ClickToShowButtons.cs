@@ -94,18 +94,48 @@ public class ClickToShowButtons : MonoBehaviour
     }
 
     void OnButtonClick(string tag)
+{
+    if (lastClickedObject != null) 
     {
-        if (lastClickedObject != null) 
+        // Find the list of buttons for the clicked tag
+        if (buttonDictionary.ContainsKey(tag))
         {
-            ObjectActionHandler.Instance.PerformAction(lastClickedObject, tag);
-            Debug.Log($"🔘 Button Clicked! Triggering Action for: {lastClickedObject.name}, Tag: {tag}");
-            HideLastButtons();
+            List<Button> buttons = buttonDictionary[tag];
+
+            // Check if the clicked button is the first one in the list for this tag
+            Button clickedButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.GetComponent<Button>();
+
+            if (clickedButton != null && buttons[0] == clickedButton) // Check if it's the first button in the list
+            {
+                Debug.Log($"🔘 First button in the list clicked for tag: {tag}");
+
+                // Perform a specific action for the first button, if needed
+                if(lastClickedObject.tag == "BeforeOnTheLinePlane")
+                {
+                    ObjectActionHandler.Instance.PerformAction(lastClickedObject, tag, "Line Up");
+                }   
+                else
+                {
+                    ObjectActionHandler.Instance.PerformAction(lastClickedObject, tag);
+                    Debug.Log($"🔘 First Button Clicked! Triggering Action for: {lastClickedObject.name}, Tag: {tag}");
+                }
+            }
+            else
+            {
+                // Perform the regular action for other buttons
+                ObjectActionHandler.Instance.PerformAction(lastClickedObject, tag);
+                Debug.Log($"🔘 Button Clicked! Triggering Action for: {lastClickedObject.name}, Tag: {tag}");
+            }
         }
-        else
-        {
-            Debug.LogError($"⚠️ Button Clicked, but no object is stored!");
-        }
+
+        HideLastButtons();
     }
+    else
+    {
+        Debug.LogError($"⚠️ Button Clicked, but no object is stored!");
+    }
+}
+
     private bool IsPointerOverUI()
     {
         return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
