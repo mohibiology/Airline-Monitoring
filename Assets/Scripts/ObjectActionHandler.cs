@@ -17,6 +17,7 @@ public class ObjectActionHandler : MonoBehaviour
     private List<GameObject> planeQueue = new List<GameObject>(); // ✅ Store planes dynamically
     [SerializeField] Transform triggerObject; // ✅ Reference to trigger object
     [SerializeField] Transform triggerObjectBeforeTakeOff;
+    [SerializeField] Transform triggerTakeOff;
 
     private GameObject currentTriggeredPlane;
     string movingPlaneTag = "BeforeOnTheLinePlane";
@@ -77,6 +78,12 @@ public class ObjectActionHandler : MonoBehaviour
             rotationBeforeGettingIntoLane, 
             () => AlignPlanesSmoothly())); // ✅ Step 4: Smoothly align planes
         }
+        else if(tag=="TakeOffPlane")
+        {
+            targetPosition = new Vector3(-400f, 0, triggerTakeOff.transform.position.z);
+            Debug.Log("Starting takeOff coroutine...");
+            StartCoroutine(takeOff(targetObject, targetPosition));
+        }
         else if(!AnyPlaneIsMoving())
         {
             if (tag == "BeforeTakeOffPlane")
@@ -100,7 +107,7 @@ public class ObjectActionHandler : MonoBehaviour
 
     public void PerformAction(GameObject targetObject, string tag, string buttonType)
     {
-        if (!planeQueue.Contains(targetObject) && tag!="Player")
+        if (!planeQueue.Contains(targetObject) && tag!="TakeOffPlane")
         {
             RegisterPlane(targetObject);
         }
@@ -216,7 +223,7 @@ public class ObjectActionHandler : MonoBehaviour
         List<GameObject> movingPlanes = new List<GameObject>();
         foreach (var plane in planeQueue)
         {
-            if (!plane.CompareTag("Player"))
+            if (!plane.CompareTag("TakeOffPlan"))
             {
                 movingPlanes.Add(plane);
             }
@@ -331,7 +338,7 @@ public class ObjectActionHandler : MonoBehaviour
             }
 
             targetPositions.Add(newPosition);
-            plane.tag = "Player";
+            plane.tag = "TakeOffPlane";
 
             Debug.Log($"Plane {i} target position: {newPosition}"); // 🔍 Debugging output
         }
@@ -379,6 +386,49 @@ public class ObjectActionHandler : MonoBehaviour
         }
     }
 
+    private IEnumerator takeOff(GameObject targetObject, Vector3 initialTakeoffPosition)
+    {
+        Vector3 initialPosition = targetObject.transform.position;
+        float elapsedTime = 0f;
+
+        // **Step 1: Move forward to takeoff position**
+        while (elapsedTime < 1f)
+        {
+            targetObject.transform.position = Vector3.Lerp(initialPosition, initialTakeoffPosition, elapsedTime);
+            elapsedTime += Time.deltaTime * moveSpeed;
+            yield return null;
+        }
+        targetObject.transform.position = initialTakeoffPosition;
+
+        // **Step 2: Slight ascent (rotation and upward movement)**
+        Vector3 climbPosition = new Vector3(initialTakeoffPosition.x, initialTakeoffPosition.y + 10, initialTakeoffPosition.z + 50);
+        Quaternion climbRotation = Quaternion.Euler(-15, 0, 0);
+        elapsedTime = 0f;
+
+        while (elapsedTime < 1f)
+        {
+            targetObject.transform.rotation = Quaternion.Slerp(targetObject.transform.rotation, climbRotation, elapsedTime);
+            targetObject.transform.position = Vector3.Lerp(initialTakeoffPosition, climbPosition, elapsedTime);
+            elapsedTime += Time.deltaTime * moveSpeed;
+            yield return null;
+        }
+        targetObject.transform.position = climbPosition;
+        targetObject.transform.rotation = climbRotation;
+
+        // **Step 3: Ascend into the sky**
+        Vector3 finalPosition = new Vector3(climbPosition.x, climbPosition.y + 100, climbPosition.z + 500);
+        elapsedTime = 0f;
+
+        while (elapsedTime < 1f)
+        {
+            targetObject.transform.position = Vector3.Lerp(climbPosition, finalPosition, elapsedTime);
+            elapsedTime += Time.deltaTime * moveSpeed;
+            yield return null;
+        }
+        targetObject.transform.position = finalPosition;
+
+        Debug.Log($"{targetObject.name} has successfully taken off!");
+    }
 
 
 
