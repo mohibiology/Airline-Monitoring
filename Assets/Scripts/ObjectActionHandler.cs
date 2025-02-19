@@ -44,7 +44,7 @@ public class ObjectActionHandler : MonoBehaviour
 
     public void PerformAction(GameObject targetObject, string tag)
     {
-        if (!planeQueue.Contains(targetObject) && tag!="Player")
+        if (!planeQueue.Contains(targetObject) && tag!="TakeOffPlane")
         {
             RegisterPlane(targetObject);
         }
@@ -140,13 +140,18 @@ public class ObjectActionHandler : MonoBehaviour
         Quaternion startRotation = targetObject.transform.rotation;
         Quaternion targetRotation = Quaternion.Euler(0, rotationOnYaxis, 0);
         Vector3 startPosition = targetObject.transform.position;
-
-        while (elapsedTime < 1f)
+        float distance = Vector3.Distance(startPosition, targetPosition);
+        float duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
+        float angle = Quaternion.Angle(startRotation, targetRotation);
+        float rotationDuration = angle / rotationSpeed;
+        
+        while (elapsedTime < Mathf.Max(duration, rotationDuration))
         {
-            targetObject.transform.rotation = Quaternion.Slerp(startRotation, targetRotation, elapsedTime * 10);
-            targetObject.transform.position = Vector3.Lerp(startPosition, targetPosition, elapsedTime);
+            float t = elapsedTime / Mathf.Max(duration, rotationDuration); // Normalize time
+            targetObject.transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+            targetObject.transform.position = Vector3.Lerp(startPosition, targetPosition, t);
 
-            elapsedTime += Time.deltaTime * moveSpeed;
+            elapsedTime += Time.deltaTime;
             yield return null;
         }
 
@@ -154,29 +159,30 @@ public class ObjectActionHandler : MonoBehaviour
         targetObject.transform.position = targetPosition;
         targetObject.tag = "BeforeOnTheLinePlane";
 
-        // ✅ Remove from queue *before* calling alignment
         if (planeQueue.Contains(targetObject))
         {
             planeQueue.Remove(targetObject);
         }
 
         UpdateAlignedPlanes(targetObject);
-        onComplete?.Invoke(); // ✅ Call next step
+        onComplete?.Invoke();
     }
-
-
 
     private IEnumerator RotateMoveRotate(GameObject targetObject, Quaternion firstRotation, Vector3 targetPosition, Quaternion finalRotation, System.Action onComplete)
     {
-        targetObject.tag="Processing";
-        Quaternion initialRotation = targetObject.transform.rotation;
-        float elapsedTime = 0f;
+        targetObject.tag = "Processing";
 
         // Step 1: First Rotation
-        while (elapsedTime < 1f)
+        Quaternion initialRotation = targetObject.transform.rotation;
+        float angle = Quaternion.Angle(initialRotation, firstRotation);
+        float rotationDuration = angle / rotationSpeed;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < rotationDuration)
         {
-            targetObject.transform.rotation = Quaternion.Slerp(initialRotation, firstRotation, elapsedTime);
-            elapsedTime += Time.deltaTime * rotationSpeed;
+            float t = elapsedTime / rotationDuration;
+            targetObject.transform.rotation = Quaternion.Slerp(initialRotation, firstRotation, t);
+            elapsedTime += Time.deltaTime;
             yield return null;
         }
         targetObject.transform.rotation = firstRotation;
@@ -184,10 +190,14 @@ public class ObjectActionHandler : MonoBehaviour
         // Step 2: Move
         Vector3 initialPosition = targetObject.transform.position;
         elapsedTime = 0f;
-        while (elapsedTime < 1f)
+        float distance = Vector3.Distance(initialPosition, targetPosition);
+        float duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
+
+        while (elapsedTime < duration)
         {
-            targetObject.transform.position = Vector3.Lerp(initialPosition, targetPosition, elapsedTime);
-            elapsedTime += Time.deltaTime * moveSpeed;
+            float t = elapsedTime / duration;
+            targetObject.transform.position = Vector3.Lerp(initialPosition, targetPosition, t);
+            elapsedTime += Time.deltaTime;
             yield return null;
         }
         targetObject.transform.position = targetPosition;
@@ -195,17 +205,77 @@ public class ObjectActionHandler : MonoBehaviour
         // Step 3: Final Rotation
         elapsedTime = 0f;
         Quaternion rotationAfterMove = targetObject.transform.rotation;
-        while (elapsedTime < 1f)
+        float angle2 = Quaternion.Angle(rotationAfterMove, finalRotation);
+        float rotationDuration2 = angle2 / rotationSpeed;
+
+        while (elapsedTime < rotationDuration2)
         {
-            targetObject.transform.rotation = Quaternion.Slerp(rotationAfterMove, finalRotation, elapsedTime);
-            elapsedTime += Time.deltaTime * rotationSpeed;
+            float t = elapsedTime / rotationDuration2;
+            targetObject.transform.rotation = Quaternion.Slerp(rotationAfterMove, finalRotation, t);
+            elapsedTime += Time.deltaTime;
             yield return null;
         }
         targetObject.transform.rotation = finalRotation;
 
-        // ✅ Step 4: Smoothly align planes
         onComplete?.Invoke();
     }
+
+    private IEnumerator takeOff(GameObject targetObject, Vector3 initialTakeoffPosition)
+    {
+        Vector3 initialPosition = targetObject.transform.position;
+        float elapsedTime = 0f;
+        float distance = Vector3.Distance(initialPosition, initialTakeoffPosition);
+        float duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
+
+        // Step 1: Move forward to takeoff position
+        while (elapsedTime < duration)
+        {
+            float t = elapsedTime / duration;
+            targetObject.transform.position = Vector3.Lerp(initialPosition, initialTakeoffPosition, t);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        targetObject.transform.position = initialTakeoffPosition;
+
+        // Step 2: Slight ascent (rotation and upward movement)
+        Vector3 climbPosition = new Vector3(initialTakeoffPosition.x, initialTakeoffPosition.y + 10, initialTakeoffPosition.z + 50);
+        Quaternion climbRotation = Quaternion.Euler(-15, 0, 0);
+        distance = Vector3.Distance(initialTakeoffPosition, climbPosition);
+        duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
+        float angle = Quaternion.Angle(targetObject.transform.rotation, climbRotation);
+        float rotationDuration = angle / rotationSpeed;
+        elapsedTime = 0f;
+
+        while (elapsedTime < Mathf.Max(duration, rotationDuration))
+        {
+            float t = elapsedTime / Mathf.Max(duration, rotationDuration);
+            targetObject.transform.rotation = Quaternion.Slerp(targetObject.transform.rotation, climbRotation, t);
+            targetObject.transform.position = Vector3.Lerp(initialTakeoffPosition, climbPosition, t);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        targetObject.transform.position = climbPosition;
+        targetObject.transform.rotation = climbRotation;
+
+        // Step 3: Ascend into the sky
+        Vector3 finalPosition = new Vector3(climbPosition.x, climbPosition.y + 500, climbPosition.z + 3000);
+        distance = Vector3.Distance(climbPosition, finalPosition);
+        duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
+        elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+            float t = elapsedTime / duration;
+            targetObject.transform.position = Vector3.Lerp(climbPosition, finalPosition, t);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        targetObject.transform.position = finalPosition;
+
+        Debug.Log($"{targetObject.name} has successfully taken off!");
+    }
+
+
 
     private void AlignPlanesSmoothly()
     {
@@ -223,7 +293,7 @@ public class ObjectActionHandler : MonoBehaviour
         List<GameObject> movingPlanes = new List<GameObject>();
         foreach (var plane in planeQueue)
         {
-            if (!plane.CompareTag("TakeOffPlan"))
+            if (!plane.CompareTag("TakeOffPlane"))
             {
                 movingPlanes.Add(plane);
             }
@@ -386,49 +456,6 @@ public class ObjectActionHandler : MonoBehaviour
         }
     }
 
-    private IEnumerator takeOff(GameObject targetObject, Vector3 initialTakeoffPosition)
-    {
-        Vector3 initialPosition = targetObject.transform.position;
-        float elapsedTime = 0f;
-
-        // **Step 1: Move forward to takeoff position**
-        while (elapsedTime < 1f)
-        {
-            targetObject.transform.position = Vector3.Lerp(initialPosition, initialTakeoffPosition, elapsedTime);
-            elapsedTime += Time.deltaTime * moveSpeed;
-            yield return null;
-        }
-        targetObject.transform.position = initialTakeoffPosition;
-
-        // **Step 2: Slight ascent (rotation and upward movement)**
-        Vector3 climbPosition = new Vector3(initialTakeoffPosition.x, initialTakeoffPosition.y + 10, initialTakeoffPosition.z + 50);
-        Quaternion climbRotation = Quaternion.Euler(-15, 0, 0);
-        elapsedTime = 0f;
-
-        while (elapsedTime < 1f)
-        {
-            targetObject.transform.rotation = Quaternion.Slerp(targetObject.transform.rotation, climbRotation, elapsedTime);
-            targetObject.transform.position = Vector3.Lerp(initialTakeoffPosition, climbPosition, elapsedTime);
-            elapsedTime += Time.deltaTime * moveSpeed;
-            yield return null;
-        }
-        targetObject.transform.position = climbPosition;
-        targetObject.transform.rotation = climbRotation;
-
-        // **Step 3: Ascend into the sky**
-        Vector3 finalPosition = new Vector3(climbPosition.x, climbPosition.y + 100, climbPosition.z + 500);
-        elapsedTime = 0f;
-
-        while (elapsedTime < 1f)
-        {
-            targetObject.transform.position = Vector3.Lerp(climbPosition, finalPosition, elapsedTime);
-            elapsedTime += Time.deltaTime * moveSpeed;
-            yield return null;
-        }
-        targetObject.transform.position = finalPosition;
-
-        Debug.Log($"{targetObject.name} has successfully taken off!");
-    }
 
 
 

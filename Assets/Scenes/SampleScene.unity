@@ -3123,8 +3123,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3e04c11fd63e0a499114a42b79b7faf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotationSpeed: 1
-  moveSpeed: 0.3
+  rotationSpeed: 100
+  moveSpeed: 100
   finalMoveSpeed: 1
   rotationOnYaxis: 270
   positionOnXaxis: -70
