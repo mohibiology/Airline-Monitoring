@@ -51,27 +51,9 @@ public class ObjectActionHandler : MonoBehaviour
 
         Vector3 targetPosition = Vector3.zero;
 
-        if (tag == "BeforeLineUpPlane1")
+        if (tag == "BeforeLineUpPlane")
         {
-            targetPosition = new Vector3(positionOnXaxis, 0, -300);
-            StartCoroutine(RotateMoveRotate(targetObject, 
-            Quaternion.Euler(0, rotationOnYaxis, 0), 
-            targetPosition,
-            rotationBeforeGettingIntoLane, 
-            () => AlignPlanesSmoothly())); // ✅ Step 4: Smoothly align planes
-        }
-        else if (tag == "BeforeLineUpPlane2")
-        {
-            targetPosition = new Vector3(positionOnXaxis, 0, -525);
-            StartCoroutine(RotateMoveRotate(targetObject, 
-            Quaternion.Euler(0, rotationOnYaxis, 0), 
-            targetPosition,
-            rotationBeforeGettingIntoLane, 
-            () => AlignPlanesSmoothly())); // ✅ Step 4: Smoothly align planes
-        }
-        else if (tag == "BeforeLineUpPlane3")
-        {
-            targetPosition = new Vector3(positionOnXaxis, 0, -750);
+            targetPosition = new Vector3(positionOnXaxis, 0, targetObject.transform.position.z);
             StartCoroutine(RotateMoveRotate(targetObject, 
             Quaternion.Euler(0, rotationOnYaxis, 0), 
             targetPosition,
