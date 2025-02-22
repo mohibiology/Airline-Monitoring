@@ -257,8 +257,6 @@ public class ObjectActionHandler : MonoBehaviour
         Debug.Log($"{targetObject.name} has successfully taken off!");
     }
 
-
-
     private void AlignPlanesSmoothly()
     {
         if (triggerObject == null) return;
@@ -267,11 +265,10 @@ public class ObjectActionHandler : MonoBehaviour
         StartCoroutine(SmoothMovePlanes(firstPlanePosition));
     }
 
-   private IEnumerator SmoothMovePlanes(Vector3 firstPlanePosition)
+    private IEnumerator SmoothMovePlanes(Vector3 firstPlanePosition)
     {
-        if (planeQueue.Count == 0) yield break; // ✅ Avoid running when no planes exist
+        if (planeQueue.Count == 0) yield break;
 
-        // ✅ Exclude planes that are already aligned (BeforeOnTheLinePlane)
         List<GameObject> movingPlanes = new List<GameObject>();
         foreach (var plane in planeQueue)
         {
@@ -280,54 +277,71 @@ public class ObjectActionHandler : MonoBehaviour
                 movingPlanes.Add(plane);
             }
         }
-
-        if (movingPlanes.Count == 0) yield break; // ✅ No valid planes to move
+        
+        if (movingPlanes.Count == 0) yield break;
 
         List<Vector3> targetPositions = new List<Vector3>();
 
-        // ✅ Determine target positions only for valid planes
+        // ✅ Compute correct target positions for each plane
         for (int i = 0; i < movingPlanes.Count; i++)
         {
             Vector3 newPosition = new Vector3(
                 positionOnXaxis,
                 firstPlanePosition.y,
-                firstPlanePosition.z - (i * planeSpacing) // ✅ Ensures correct spacing
+                firstPlanePosition.z - (i * planeSpacing) 
             );
             targetPositions.Add(newPosition);
         }
 
         float elapsedTime = 0f;
-        float duration = 2.5f; // ✅ Increased duration for smoother movement
+        
+        // ✅ Find the farthest-moving plane
+        float maxDistance = 0f;
+        foreach (var plane in movingPlanes)
+        {
+            float d = Vector3.Distance(plane.transform.position, firstPlanePosition);
+            if (d > maxDistance) maxDistance = d;
+        }
 
-    while (elapsedTime < duration)
-    {
-        float t = Mathf.SmoothStep(0, 1, elapsedTime / duration); // ✅ Smooth transition
+        // ✅ Use consistent duration based on max distance
+        float duration = maxDistance / moveSpeed;
 
+        List<Vector3> initialPositions = new List<Vector3>();
+        foreach (var plane in movingPlanes)
+        {
+            initialPositions.Add(plane.transform.position);
+        }
+
+        while (elapsedTime < duration)
+        {
+            float t = elapsedTime / duration;  // ✅ Smooth movement
+
+            for (int i = 0; i < movingPlanes.Count; i++)
+            {
+                if (i < targetPositions.Count)
+                {
+                    movingPlanes[i].transform.position = Vector3.Lerp(
+                        initialPositions[i], 
+                        targetPositions[i], 
+                        t
+                    );
+                }
+            }
+
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        // ✅ Snap to final positions
         for (int i = 0; i < movingPlanes.Count; i++)
         {
             if (i < targetPositions.Count)
             {
-                movingPlanes[i].transform.position = Vector3.Lerp(
-                    movingPlanes[i].transform.position, 
-                    targetPositions[i], 
-                    t
-                );
+                movingPlanes[i].transform.position = targetPositions[i];
             }
         }
-
-        elapsedTime += Time.deltaTime;
-        yield return null;
     }
 
-    // ✅ Ensure exact final positions
-    for (int i = 0; i < movingPlanes.Count; i++)
-    {
-        if (i < targetPositions.Count)
-        {
-            movingPlanes[i].transform.position = targetPositions[i];
-        }
-    }
-}
 
     private void AlignAndRotatePlanesSmoothly()
     {
