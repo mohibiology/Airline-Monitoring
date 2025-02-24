@@ -18,6 +18,9 @@ public class ObjectActionHandler : MonoBehaviour
     [SerializeField] Transform triggerObject; // ✅ Reference to trigger object
     [SerializeField] Transform triggerObjectBeforeTakeOff;
     [SerializeField] Transform triggerTakeOff;
+    [SerializeField] Transform triggerHold;
+
+    
 
     private GameObject currentTriggeredPlane;
     string movingPlaneTag = "BeforeOnTheLinePlane";
@@ -72,7 +75,7 @@ public class ObjectActionHandler : MonoBehaviour
             {
                 if (currentTriggeredPlane != null)
                 {
-                    targetPosition = new Vector3(-260f, 0, currentTriggeredPlane.transform.position.z); // ✅ Move forward
+                    targetPosition = triggerHold.transform.position; // ✅ Move forward
 
                     // ✅ Remove the plane from the queue before moving
                     if (planeQueue.Contains(currentTriggeredPlane))
@@ -119,26 +122,53 @@ public class ObjectActionHandler : MonoBehaviour
     private IEnumerator RotateMoveSimultaneously(GameObject targetObject, Vector3 targetPosition, System.Action onComplete)
     {
         float elapsedTime = 0f;
+
+        // First target position & rotation
         Quaternion startRotation = targetObject.transform.rotation;
-        Quaternion targetRotation = Quaternion.Euler(0, rotationOnYaxis, 0);
+        Quaternion targetRotation1 = Quaternion.Euler(0, 250f, 0);
         Vector3 startPosition = targetObject.transform.position;
-        float distance = Vector3.Distance(startPosition, targetPosition);
-        float duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
-        float angle = Quaternion.Angle(startRotation, targetRotation);
-        float rotationDuration = angle / rotationSpeed;
-        
-        while (elapsedTime < Mathf.Max(duration, rotationDuration))
+        Vector3 beforeTargetPosition = new Vector3(-150, 0, -1086);
+
+        float distance1 = Vector3.Distance(startPosition, beforeTargetPosition);
+        float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
+        float angle1 = Quaternion.Angle(startRotation, targetRotation1);
+        float rotationDuration1 = angle1 / rotationSpeed;
+
+        // Second target position & rotation
+        Quaternion targetRotation2 = Quaternion.Euler(0, rotationOnYaxis, 0);
+        float distance2 = Vector3.Distance(beforeTargetPosition, targetPosition);
+        float duration2 = (distance2 > 0.01f) ? distance2 / moveSpeed : 0.1f;
+        float angle2 = Quaternion.Angle(targetRotation1, targetRotation2);
+        float rotationDuration2 = angle2 / rotationSpeed;
+
+        float totalDuration = duration1 + duration2;
+        float totalRotationDuration = rotationDuration1 + rotationDuration2;
+
+        while (elapsedTime < Mathf.Max(totalDuration, totalRotationDuration))
         {
-            float t = elapsedTime / Mathf.Max(duration, rotationDuration); // Normalize time
-            targetObject.transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
-            targetObject.transform.position = Vector3.Lerp(startPosition, targetPosition, t);
+            float t1 = Mathf.Clamp01(elapsedTime / Mathf.Max(duration1, rotationDuration1)); // Normalize phase 1
+            float t2 = Mathf.Clamp01((elapsedTime - duration1) / Mathf.Max(duration2, rotationDuration2)); // Normalize phase 2
+
+            if (elapsedTime < duration1)
+            {
+                // Phase 1 movement and rotation
+                targetObject.transform.position = Vector3.Lerp(startPosition, beforeTargetPosition, t1);
+                targetObject.transform.rotation = Quaternion.Slerp(startRotation, targetRotation1, t1);
+            }
+            else
+            {
+                // Phase 2 movement and rotation
+                targetObject.transform.position = Vector3.Lerp(beforeTargetPosition, targetPosition, t2);
+                targetObject.transform.rotation = Quaternion.Slerp(targetRotation1, targetRotation2, t2);
+            }
 
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
-        targetObject.transform.rotation = targetRotation;
+        // Ensure final values are set exactly
         targetObject.transform.position = targetPosition;
+        targetObject.transform.rotation = targetRotation2;
         targetObject.tag = "BeforeOnTheLinePlane";
 
         if (planeQueue.Contains(targetObject))
@@ -149,6 +179,7 @@ public class ObjectActionHandler : MonoBehaviour
         UpdateAlignedPlanes(targetObject);
         onComplete?.Invoke();
     }
+
 
     private IEnumerator RotateMoveRotate(GameObject targetObject, Quaternion firstRotation, Vector3 targetPosition, Quaternion finalRotation, System.Action onComplete)
     {
