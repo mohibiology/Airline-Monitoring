@@ -34,6 +34,7 @@ public class ClickToShowButtons : MonoBehaviour
                 button.gameObject.SetActive(false);
             }
         }
+        AssignButtonListeners();
     }
 
     void Update()
@@ -55,15 +56,18 @@ public class ClickToShowButtons : MonoBehaviour
 
                     Debug.Log($"📌 Stored lastClickedObject: {lastClickedObject.name}, Tag: {lastClickedObject.tag}");
 
-                    // ✅ Store the correct tag at the moment of clicking
-                    foreach (var button in buttonDictionary[hitTag])
+                    List<Button> buttons = buttonDictionary[hitTag];
+
+                    for (int i = 0; i < buttons.Count; i++)
                     {
+                        Button button = buttons[i];
                         button.gameObject.SetActive(true);
                         lastActiveButtons.Add(button);
 
-                        // ✅ Remove previous listeners to avoid duplicate calls
-                        button.onClick.RemoveAllListeners();
-                        button.onClick.AddListener(() => OnButtonClick(lastClickedObject.tag));
+                        button.onClick.RemoveAllListeners(); // Remove previous listeners
+
+                        int index = i; // Capture index for closure
+                        button.onClick.AddListener(() => OnButtonClick(hitTag, index)); // ✅ Pass index & tag
                     }
 
                     MouseControl.canMoveCamera = false;
@@ -80,8 +84,6 @@ public class ClickToShowButtons : MonoBehaviour
         }
     }
 
-
-
     void HideLastButtons()
     {
         foreach (var button in lastActiveButtons)
@@ -92,49 +94,70 @@ public class ClickToShowButtons : MonoBehaviour
 
         MouseControl.canMoveCamera = true; // ✅ Re-enable camera movement when buttons are hidden
     }
-
-    void OnButtonClick(string tag)
-{
-    if (lastClickedObject != null) 
+    void AssignButtonListeners()
     {
-        // Find the list of buttons for the clicked tag
-        if (buttonDictionary.ContainsKey(tag))
+        if (lastClickedObject == null) return;
+
+        string tag = lastClickedObject.tag;
+        if (!buttonDictionary.ContainsKey(tag)) return;
+
+        List<Button> buttons = buttonDictionary[tag];
+
+        for (int i = 0; i < buttons.Count; i++)
         {
-            List<Button> buttons = buttonDictionary[tag];
+            Button button = buttons[i];
+            button.onClick.RemoveAllListeners(); // Clear old listeners to prevent duplicates
 
-            // Check if the clicked button is the first one in the list for this tag
-            Button clickedButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.GetComponent<Button>();
-
-            if (clickedButton != null && buttons[0] == clickedButton) // Check if it's the first button in the list
+            // Capture index to determine which button was clicked
+            int index = i;
+            button.onClick.AddListener(() => OnButtonClick(tag,index));
+        }
+    }
+    void OnButtonClick(string tag, int index)
+    {
+        if (lastClickedObject != null) 
+        {
+            // Ensure the tag exists in the dictionary
+            if (buttonDictionary.ContainsKey(tag))
             {
-                Debug.Log($"🔘 First button in the list clicked for tag: {tag}");
+                List<Button> buttons = buttonDictionary[tag];
 
-                // Perform a specific action for the first button, if needed
-                if(lastClickedObject.tag == "BeforeOnTheLinePlane")
+                Debug.Log($"🔘 Button Index {index} clicked for tag: {tag}");
+
+                // ✅ Ensure index is within valid range
+                if (index >= buttons.Count)
                 {
-                    ObjectActionHandler.Instance.PerformAction(lastClickedObject, tag, "Line Up");
-                }   
+                    Debug.LogError($"⚠️ Invalid index {index} for tag {tag} (Only {buttons.Count} buttons available)");
+                    return;
+                }
+
+                // ✅ If the clicked object is "BeforeOnTheLinePlane", handle both buttons
+                if (tag == "BeforeOnTheLinePlane")
+                {
+                    if (index == 0)
+                    {
+                        ObjectActionHandler.Instance.PerformAction(lastClickedObject, tag, "Line Up");
+                    }
+                    else if (index == 1)
+                    {
+                        ObjectActionHandler.Instance.PerformAction(lastClickedObject, tag, "IMD Take Off");
+                    }
+                }
                 else
                 {
+                    // ✅ For other tags, always trigger the first button's action
                     ObjectActionHandler.Instance.PerformAction(lastClickedObject, tag);
-                    Debug.Log($"🔘 First Button Clicked! Triggering Action for: {lastClickedObject.name}, Tag: {tag}");
                 }
             }
-            else
-            {
-                // Perform the regular action for other buttons
-                ObjectActionHandler.Instance.PerformAction(lastClickedObject, tag);
-                Debug.Log($"🔘 Button Clicked! Triggering Action for: {lastClickedObject.name}, Tag: {tag}");
-            }
-        }
 
-        HideLastButtons();
+            HideLastButtons();
+        }
+        else
+        {
+            Debug.LogError($"⚠️ Button Clicked, but no object is stored!");
+        }
     }
-    else
-    {
-        Debug.LogError($"⚠️ Button Clicked, but no object is stored!");
-    }
-}
+
 
     private bool IsPointerOverUI()
     {

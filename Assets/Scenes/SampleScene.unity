@@ -2394,7 +2394,7 @@ GameObject:
   - component: {fileID: 1048516000}
   - component: {fileID: 1048515999}
   m_Layer: 5
-  m_Name: Immediate Take Off
+  m_Name: IMD Take Off
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3334,8 +3334,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3e04c11fd63e0a499114a42b79b7faf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotationSpeed: 50
-  moveSpeed: 40
+  rotationSpeed: 55
+  moveSpeed: 50
   finalMoveSpeed: 1
   rotationOnYaxis: 270
   positionOnXaxis: -225

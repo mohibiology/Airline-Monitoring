@@ -12,6 +12,7 @@ TagManager:
   - Processing
   - BeforeOnTheLinePlane
   - TakeOffPlane
+  - PlaneTookOff
   layers:
   - Default
   - TransparentFX

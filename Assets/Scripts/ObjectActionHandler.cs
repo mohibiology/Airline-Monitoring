@@ -102,21 +102,11 @@ public class ObjectActionHandler : MonoBehaviour
             {
                 StartCoroutine(RotateMoveSimultaneouslyForTakeOff(targetObject));// ✅ Special logic for the "Line Up" button
             }
+            else if(buttonType == "IMD Take Off" && tag == "BeforeOnTheLinePlane")
+            {
+                StartCoroutine(ImmediateTakeOff(targetObject));
+            }
         }
-        // else if (buttonType == "TakeOff" && tag == "BeforeTakeOffPlane" && !AnyPlaneIsMoving())
-        // {
-        //     if (currentTriggeredPlane != null)
-        //     {
-        //         Vector3 targetPosition = new Vector3(-260f, 0, currentTriggeredPlane.transform.position.z);
-
-        //         if (planeQueue.Contains(currentTriggeredPlane))
-        //         {
-        //             planeQueue.Remove(currentTriggeredPlane);
-        //         }
-
-        //         StartCoroutine(RotateMoveSimultaneously(currentTriggeredPlane, targetPosition, () => AlignPlanesSmoothly()));
-        //     }
-        // }
     }
 
 
@@ -180,6 +170,108 @@ public class ObjectActionHandler : MonoBehaviour
 
         onComplete?.Invoke();
     }
+    private IEnumerator ImmediateTakeOff(GameObject targetObject)
+    {
+
+        targetObject.tag="PlaneTookOff";
+        float elapsedTime = 0f;
+
+        // First target position & rotation
+        Vector3 targetPosition = triggerObjectBeforeTakeOff.transform.position;
+        Quaternion startRotation = targetObject.transform.rotation;
+        Quaternion targetRotation1 = Quaternion.Euler(0, 310f, 0);
+        Vector3 startPosition = targetObject.transform.position;
+        Vector3 beforeTargetPosition = new Vector3(-375, 0, -1070);
+
+        float distance1 = Vector3.Distance(startPosition, beforeTargetPosition);
+        float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
+        float angle1 = Quaternion.Angle(startRotation, targetRotation1);
+        float rotationDuration1 = angle1 / rotationSpeed;
+
+        // Second target position & rotation
+        Quaternion targetRotation2 = Quaternion.Euler(0, 360f, 0);
+        float distance2 = Vector3.Distance(beforeTargetPosition, targetPosition);
+        float duration2 = (distance2 > 0.01f) ? distance2 / moveSpeed : 0.1f;
+        float angle2 = Quaternion.Angle(targetRotation1, targetRotation2);
+        float rotationDuration2 = angle2 / rotationSpeed;
+
+        float totalDuration = duration1 + duration2;
+        float totalRotationDuration = rotationDuration1 + rotationDuration2;
+
+        while (elapsedTime < Mathf.Max(totalDuration, totalRotationDuration))
+        {
+            float t1 = Mathf.Clamp01(elapsedTime / Mathf.Max(duration1, rotationDuration1)); // Normalize phase 1
+            float t2 = Mathf.Clamp01((elapsedTime - duration1) / Mathf.Max(duration2, rotationDuration2)); // Normalize phase 2
+
+            if (elapsedTime < duration1)
+            {
+                // Phase 1 movement and rotation
+                targetObject.transform.position = Vector3.Lerp(startPosition, beforeTargetPosition, t1);
+                targetObject.transform.rotation = Quaternion.Slerp(startRotation, targetRotation1, t1);
+            }
+            else
+            {
+                // Phase 2 movement and rotation
+                targetObject.transform.position = Vector3.Lerp(beforeTargetPosition, targetPosition, t2);
+                targetObject.transform.rotation = Quaternion.Slerp(targetRotation1, targetRotation2, t2);
+            }
+
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        Vector3 initialPosition = targetObject.transform.position;
+        elapsedTime = 0f;
+        Vector3 initialTakeoffPosition = new Vector3(-400f, 0, triggerTakeOff.transform.position.z);
+        float distance = Vector3.Distance(initialPosition, initialTakeoffPosition);
+        float duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
+
+        // Step 1: Move forward to takeoff position
+        while (elapsedTime < duration)
+        {
+            float t = elapsedTime / duration;
+            targetObject.transform.position = Vector3.Lerp(initialPosition, initialTakeoffPosition, t);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        targetObject.transform.position = initialTakeoffPosition;
+
+        // Step 2: Slight ascent (rotation and upward movement)
+        Vector3 climbPosition = new Vector3(initialTakeoffPosition.x, initialTakeoffPosition.y + 10, initialTakeoffPosition.z + 100);
+        Quaternion climbRotation = Quaternion.Euler(-15, 0, 0);
+        distance = Vector3.Distance(initialTakeoffPosition, climbPosition);
+        duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
+        float angle = Quaternion.Angle(targetObject.transform.rotation, climbRotation);
+        float rotationDuration = angle / rotationSpeed;
+        elapsedTime = 0f;
+
+        while (elapsedTime < Mathf.Max(duration, rotationDuration))
+        {
+            float t = elapsedTime / Mathf.Max(duration, rotationDuration);
+            targetObject.transform.rotation = Quaternion.Slerp(targetObject.transform.rotation, climbRotation, t);
+            targetObject.transform.position = Vector3.Lerp(initialTakeoffPosition, climbPosition, t);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        targetObject.transform.position = climbPosition;
+        targetObject.transform.rotation = climbRotation;
+
+        // Step 3: Ascend into the sky
+        Vector3 finalPosition = new Vector3(climbPosition.x, climbPosition.y + 500, climbPosition.z + 3500);
+        distance = Vector3.Distance(climbPosition, finalPosition);
+        duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
+        elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+            float t = elapsedTime / duration;
+            targetObject.transform.position = Vector3.Lerp(climbPosition, finalPosition, t);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        targetObject.transform.position = finalPosition;
+
+        Destroy(targetObject);
+    }
     private IEnumerator RotateMoveSimultaneouslyForTakeOff(GameObject targetObject)
     {
         float elapsedTime = 0f;
@@ -187,7 +279,7 @@ public class ObjectActionHandler : MonoBehaviour
         // First target position & rotation
         Vector3 targetPosition = triggerObjectBeforeTakeOff.transform.position;
         Quaternion startRotation = targetObject.transform.rotation;
-        Quaternion targetRotation1 = Quaternion.Euler(0, 330f, 0);
+        Quaternion targetRotation1 = Quaternion.Euler(0, 310f, 0);
         Vector3 startPosition = targetObject.transform.position;
         Vector3 beforeTargetPosition = new Vector3(-375, 0, -1070);
 
@@ -294,6 +386,7 @@ public class ObjectActionHandler : MonoBehaviour
     
     private IEnumerator takeOff(GameObject targetObject, Vector3 initialTakeoffPosition)
     {
+        targetObject.tag = "PlaneTookOff";
         Vector3 initialPosition = targetObject.transform.position;
         float elapsedTime = 0f;
         float distance = Vector3.Distance(initialPosition, initialTakeoffPosition);
@@ -310,7 +403,7 @@ public class ObjectActionHandler : MonoBehaviour
         targetObject.transform.position = initialTakeoffPosition;
 
         // Step 2: Slight ascent (rotation and upward movement)
-        Vector3 climbPosition = new Vector3(initialTakeoffPosition.x, initialTakeoffPosition.y + 10, initialTakeoffPosition.z + 50);
+        Vector3 climbPosition = new Vector3(initialTakeoffPosition.x, initialTakeoffPosition.y + 10, initialTakeoffPosition.z + 100);
         Quaternion climbRotation = Quaternion.Euler(-15, 0, 0);
         distance = Vector3.Distance(initialTakeoffPosition, climbPosition);
         duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
@@ -330,7 +423,7 @@ public class ObjectActionHandler : MonoBehaviour
         targetObject.transform.rotation = climbRotation;
 
         // Step 3: Ascend into the sky
-        Vector3 finalPosition = new Vector3(climbPosition.x, climbPosition.y + 500, climbPosition.z + 3000);
+        Vector3 finalPosition = new Vector3(climbPosition.x, climbPosition.y + 500, climbPosition.z + 3500);
         distance = Vector3.Distance(climbPosition, finalPosition);
         duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
         elapsedTime = 0f;
@@ -343,6 +436,8 @@ public class ObjectActionHandler : MonoBehaviour
             yield return null;
         }
         targetObject.transform.position = finalPosition;
+
+        Destroy(targetObject);
 
         Debug.Log($"{targetObject.name} has successfully taken off!");
     }
