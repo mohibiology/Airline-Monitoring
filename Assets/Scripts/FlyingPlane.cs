@@ -6,7 +6,9 @@ public class FlyingPlane : MonoBehaviour
 {
     [SerializeField] private GameObject planePrefab;  // Assign the plane prefab in the Inspector
     [SerializeField] private float spawnInterval = 10f; // Time in seconds between spawns
-
+    [SerializeField] private Vector3 targetPosition = new Vector3(0, 0, 0);
+    [SerializeField] float moveSpeed = 2f;
+    [SerializeField] float increaseSpeed = 2f;
     // List of predefined spawn positions
     [SerializeField] private List<Vector3> spawnPositions = new List<Vector3>
     {
@@ -42,13 +44,35 @@ public class FlyingPlane : MonoBehaviour
         {
             int randomIndex = Random.Range(0, spawnPositions.Count); // Pick a random spawn position
             Vector3 chosenPosition = spawnPositions[randomIndex];
+            Quaternion spawnRotation = Quaternion.Euler(0, 180f, 0);
 
-            Instantiate(planePrefab, chosenPosition, Quaternion.identity); // No rotation
+            GameObject newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation);
             Debug.Log($"🛩 Plane spawned at position: {chosenPosition}");
+
+            StartCoroutine(MovePlane(newPlane));
         }
         else
         {
             Debug.LogError("⚠️ Plane Prefab is missing or no spawn positions assigned!");
         }
+    }
+    private IEnumerator MovePlane(GameObject plane)
+    {
+        Vector3 targetPosition = this.targetPosition; // ✅ Set destination (change as needed)
+        Vector3 startPosition = plane.transform.position;
+        float distance = Vector3.Distance(startPosition, targetPosition);
+        float duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+            float t = elapsedTime / duration;
+            plane.transform.position = Vector3.Lerp(startPosition, targetPosition, t); // ✅ Smooth movement
+            elapsedTime += Time.deltaTime * increaseSpeed;
+            yield return null;
+        }
+
+        plane.transform.position = targetPosition; // ✅ Ensure exact final position
+        Debug.Log($"🛫 Plane reached target position: {targetPosition}");
     }
 }

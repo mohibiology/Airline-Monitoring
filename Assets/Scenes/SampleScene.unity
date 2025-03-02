@@ -3382,7 +3382,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   planePrefab: {fileID: 9197765847602058572, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
-  spawnInterval: 10
+  spawnInterval: 5
+  targetPosition: {x: 0, y: 30, z: -1000}
+  moveSpeed: 30
+  increaseSpeed: 1
   spawnPositions:
   - {x: -50, y: 10, z: 0}
   - {x: 30, y: 12, z: -20}
