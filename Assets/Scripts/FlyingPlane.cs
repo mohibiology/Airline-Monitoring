@@ -5,8 +5,9 @@ using System.Collections.Generic;
 public class FlyingPlane : MonoBehaviour
 {
     [SerializeField] private GameObject planePrefab;  // Assign the plane prefab in the Inspector
+    [SerializeField] private Transform planeHandler;
     [SerializeField] private float spawnInterval = 10f; // Time in seconds between spawns
-    [SerializeField] private Vector3 targetPosition = new Vector3(0, 0, 0);
+    [SerializeField] private float targetPositionOnZaxis = 3000f;
     [SerializeField] float moveSpeed = 2f;
     [SerializeField] float increaseSpeed = 2f;
     // List of predefined spawn positions
@@ -46,7 +47,7 @@ public class FlyingPlane : MonoBehaviour
             Vector3 chosenPosition = spawnPositions[randomIndex];
             Quaternion spawnRotation = Quaternion.Euler(0, 180f, 0);
 
-            GameObject newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation);
+            GameObject newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
             Debug.Log($"🛩 Plane spawned at position: {chosenPosition}");
 
             StartCoroutine(MovePlane(newPlane));
@@ -58,7 +59,7 @@ public class FlyingPlane : MonoBehaviour
     }
     private IEnumerator MovePlane(GameObject plane)
     {
-        Vector3 targetPosition = this.targetPosition; // ✅ Set destination (change as needed)
+        Vector3 targetPosition = new Vector3(plane.transform.position.x, plane.transform.position.y, targetPositionOnZaxis); // ✅ Set destination (change as needed)
         Vector3 startPosition = plane.transform.position;
         float distance = Vector3.Distance(startPosition, targetPosition);
         float duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;

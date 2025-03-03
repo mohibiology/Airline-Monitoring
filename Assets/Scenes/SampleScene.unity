@@ -786,6 +786,10 @@ PrefabInstance:
       value: Airplane
       objectReference: {fileID: 0}
     - target: {fileID: 9197765847602058572, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9197765847602058572, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
       propertyPath: m_TagString
       value: BeforeLineUpPlane
       objectReference: {fileID: 0}
@@ -1526,63 +1530,6 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 1
---- !u!1001 &459453670
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -2500
-      objectReference: {fileID: 0}
-    - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1000
-      objectReference: {fileID: 0}
-    - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 1500
-      objectReference: {fileID: 0}
-    - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 180
-      objectReference: {fileID: 0}
-    - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9197765847602058572, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
-      propertyPath: m_Name
-      value: Airplane (3)
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
 --- !u!1001 &534349283
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3382,21 +3329,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   planePrefab: {fileID: 9197765847602058572, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
-  spawnInterval: 5
-  targetPosition: {x: 0, y: 30, z: -1000}
-  moveSpeed: 30
+  planeHandler: {fileID: 2122336549}
+  spawnInterval: 3
+  targetPositionOnZaxis: -2500
+  moveSpeed: 50
   increaseSpeed: 1
   spawnPositions:
-  - {x: -50, y: 10, z: 0}
-  - {x: 30, y: 12, z: -20}
-  - {x: 100, y: 15, z: 50}
-  - {x: -75, y: 10, z: 30}
-  - {x: 40, y: 10, z: -40}
-  - {x: -30, y: 10, z: 70}
-  - {x: 90, y: 10, z: -10}
-  - {x: -100, y: 10, z: 90}
-  - {x: 60, y: 10, z: 30}
-  - {x: -20, y: 10, z: -60}
+  - {x: -2000, y: 750, z: 2000}
+  - {x: -2000, y: 700, z: 1500}
+  - {x: -2000, y: 600, z: 1600}
+  - {x: -2000, y: 650, z: 1700}
+  - {x: -2000, y: 800, z: 1900}
 --- !u!1001 &1422671001
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3824,6 +3767,7 @@ Transform:
   - {fileID: 1912712227}
   - {fileID: 1525078487}
   - {fileID: 1398250385}
+  - {fileID: 2122336549}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1747760086
@@ -4607,6 +4551,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2585560013519775812, guid: 6a5a587b70f7d5048b7aebf7e82e90c7, type: 3}
   m_PrefabInstance: {fileID: 2057329332}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2122336548
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2122336549}
+  m_Layer: 0
+  m_Name: Plane Handler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2122336549
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2122336548}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 226.36137, y: 33.539276, z: -90.168915}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1710188789}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -4626,4 +4601,3 @@ SceneRoots:
   - {fileID: 193725120}
   - {fileID: 6007439}
   - {fileID: 1000344984}
-  - {fileID: 459453670}
