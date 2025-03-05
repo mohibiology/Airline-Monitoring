@@ -380,6 +380,7 @@ public class ObjectActionHandler : MonoBehaviour
             yield return null;
         }
         targetObject.transform.rotation = finalRotation;
+        targetObject.tag = "ProcessingCompletion";
 
         onComplete?.Invoke();
     }
@@ -457,7 +458,7 @@ public class ObjectActionHandler : MonoBehaviour
         List<GameObject> movingPlanes = new List<GameObject>();
         foreach (var plane in planeQueue)
         {
-            if (!plane.CompareTag("TakeOffPlane"))
+            if (plane.CompareTag("ProcessingCompletion"))
             {
                 movingPlanes.Add(plane);
             }
