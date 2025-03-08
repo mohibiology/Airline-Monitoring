@@ -32,7 +32,7 @@ public class FlyingPlane : MonoBehaviour
 
     private IEnumerator SpawnPlanes()
     {
-        while (true) // Infinite loop to keep spawning planes
+        while (true)
         {
             yield return new WaitForSeconds(spawnInterval); // Wait for the interval
             SpawnPlane();
@@ -75,5 +75,48 @@ public class FlyingPlane : MonoBehaviour
 
         plane.transform.position = targetPosition; // ✅ Ensure exact final position
         Debug.Log($"🛫 Plane reached target position: {targetPosition}");
+
+        yield return StartCoroutine(MovePlaneInUCurve(plane));
     }
+    private IEnumerator MovePlaneInUCurve(GameObject plane)
+    {
+        Vector3 startPosition = plane.transform.position;
+        Vector3 endPosition = new Vector3(-400, startPosition.y, -2500); // ✅ Correct end position at -2500 Z-axis
+
+        float distance = Vector3.Distance(startPosition, endPosition);
+        float duration = (distance > 0.01f) ? distance / moveSpeed : 2f; // ✅ Fixed duration scaling
+        float elapsedTime = 0f;
+
+        // 🎯 **Fixed Control Points for a Perfect U-Curve**
+        Vector3 controlPoint1 = new Vector3(-1600, startPosition.y, startPosition.z - 1000);  
+        Vector3 controlPoint2 = new Vector3(-1000, startPosition.y, -2700); // ✅ Adjusted to guide plane back correctly
+
+        Quaternion initialRotation = plane.transform.rotation;
+        Quaternion finalRotation = initialRotation * Quaternion.Euler(0, 180f, 0); // ✅ Smooth 180° rotation
+
+        while (elapsedTime < duration)
+        {
+            float t = elapsedTime / duration;
+
+            // 🎯 **Fixed Cubic Bézier Curve**
+            Vector3 newPos = Mathf.Pow(1 - t, 3) * startPosition
+                        + 3 * Mathf.Pow(1 - t, 2) * t * controlPoint1
+                        + 3 * (1 - t) * Mathf.Pow(t, 2) * controlPoint2
+                        + Mathf.Pow(t, 3) * endPosition;
+
+            // ✅ Apply Position & Rotation
+            plane.transform.position = newPos;
+            plane.transform.rotation = Quaternion.Slerp(initialRotation, finalRotation, t);
+
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        // ✅ Ensure exact final position & rotation
+        plane.transform.position = endPosition;
+        plane.transform.rotation = finalRotation;
+        Debug.Log($"🛫 Plane completed U-curve movement at {endPosition}");
+    }
+
+
 }
