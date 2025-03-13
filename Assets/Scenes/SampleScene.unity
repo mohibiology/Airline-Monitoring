@@ -858,7 +858,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -3000.41
+      value: -400
       objectReference: {fileID: 0}
     - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
       propertyPath: m_LocalPosition.y
@@ -866,23 +866,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1000
+      value: -2500.001
       objectReference: {fileID: 0}
     - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.3826841
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.92387927
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -890,7 +890,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 135
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2263620878767406836, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -3402,8 +3402,8 @@ MonoBehaviour:
   - {x: 4200, y: 650, z: -2500}
   - {x: -4000, y: 600, z: -500}
   - {x: -4000, y: 650, z: -500}
-  - {x: 0, y: 600, z: -500}
-  - {x: 0, y: 650, z: -500}
+  - {x: 4000, y: 600, z: -500}
+  - {x: 4000, y: 650, z: -500}
   - {x: -400, y: 600, z: -5000}
   - {x: -400, y: 650, z: -5000}
 --- !u!1001 &1422671001
