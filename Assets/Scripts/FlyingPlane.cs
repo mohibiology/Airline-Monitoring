@@ -45,7 +45,7 @@ public class FlyingPlane : MonoBehaviour
         if (planePrefab != null && spawnPositions.Count > 0)
         {
             int randomIndex = Random.Range(0, spawnPositions.Count); // Pick a random spawn position
-            randomIndex = 7;
+            randomIndex = 2;
             Vector3 chosenPosition = spawnPositions[randomIndex];
             Quaternion spawnRotation = Quaternion.Euler(0,0,0);
             if(randomIndex<=1)
@@ -98,45 +98,125 @@ public class FlyingPlane : MonoBehaviour
     }
     private IEnumerator MoveTillSecondPlane(GameObject plane)
     {
-        Vector3 startPosition = plane.transform.position;
-        Vector3 targetPosition1 = new Vector3(-2000f, plane.transform.position.y-100, targetPositionOnZaxis); // ✅ Set destination (change as needed)
-        float distance1 = Vector3.Distance(startPosition, targetPosition1);
-        float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
+        // Vector3 startPosition = plane.transform.position;
+        // Vector3 targetPosition1 = new Vector3(-2000f, plane.transform.position.y-100, targetPositionOnZaxis); // ✅ Set destination (change as needed)
+        // float distance1 = Vector3.Distance(startPosition, targetPosition1);
+        // float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
 
-        float totalDuration = duration1;
-        float elapsedTime = 0f;
+        // float totalDuration = duration1;
+        // float elapsedTime = 0f;
 
-        while (elapsedTime < totalDuration)
-        {
-            float t1 = elapsedTime / duration1;
-            if (elapsedTime < duration1)
-            {
-                plane.transform.position = Vector3.Lerp(startPosition, targetPosition1, t1); // ✅ Smooth movement
-            }
-            elapsedTime += Time.deltaTime * increaseSpeed;
-            yield return null;
-        }
+        // while (elapsedTime < totalDuration)
+        // {
+        //     float t1 = elapsedTime / duration1;
+        //     if (elapsedTime < duration1)
+        //     {
+        //         plane.transform.position = Vector3.Lerp(startPosition, targetPosition1, t1); // ✅ Smooth movement
+        //     }
+        //     elapsedTime += Time.deltaTime * increaseSpeed;
+        //     yield return null;
+        // }
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            plane.transform.position,
+            new Vector3(-2000f, plane.transform.position.y-100, targetPositionOnZaxis),
+            plane.transform.rotation,
+            plane.transform.rotation // no rotation here
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-2000f, plane.transform.position.y, targetPositionOnZaxis),
+            new Vector3(-500f, 300f, targetPositionOnZaxis),
+            plane.transform.rotation,
+            Quaternion.Euler(0, 90f, 0) // no rotation here
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-500f, 300f, targetPositionOnZaxis),
+            new Vector3(-400f, 275f, -2400f),
+            plane.transform.rotation,
+            Quaternion.Euler(0, 45f, 45f)
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-400f, 275f, -2400f),
+            new Vector3(-400f, 250f, -2300f),
+            Quaternion.Euler(0, 45f, 45f),
+            Quaternion.Euler(0, 0f, 0f)
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-400f, 250f, -2300f),
+            new Vector3(-400f, 0f, -850f),
+            Quaternion.Euler(0, 0f, 0f),
+            Quaternion.Euler(0, 0f, 0f)
+        ));
     }
     private IEnumerator MoveTillFourthPlane(GameObject plane)
     {
-        Vector3 startPosition = plane.transform.position;
-        Vector3 targetPosition1 = new Vector3(2000f, plane.transform.position.y-100, targetPositionOnZaxis); // ✅ Set destination (change as needed)
-        float distance1 = Vector3.Distance(startPosition, targetPosition1);
-        float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
+        // Vector3 startPosition = plane.transform.position;
+        // Vector3 targetPosition1 = new Vector3(2000f, plane.transform.position.y-100, targetPositionOnZaxis); // ✅ Set destination (change as needed)
+        // float distance1 = Vector3.Distance(startPosition, targetPosition1);
+        // float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
 
-        float totalDuration = duration1;
-        float elapsedTime = 0f;
+        // float totalDuration = duration1;
+        // float elapsedTime = 0f;
 
-        while (elapsedTime < totalDuration)
-        {
-            float t1 = elapsedTime / duration1;
-            if (elapsedTime < duration1)
-            {
-                plane.transform.position = Vector3.Lerp(startPosition, targetPosition1, t1); // ✅ Smooth movement
-            }
-            elapsedTime += Time.deltaTime * increaseSpeed;
-            yield return null;
-        }
+        // while (elapsedTime < totalDuration)
+        // {
+        //     float t1 = elapsedTime / duration1;
+        //     if (elapsedTime < duration1)
+        //     {
+        //         plane.transform.position = Vector3.Lerp(startPosition, targetPosition1, t1); // ✅ Smooth movement
+        //     }
+        //     elapsedTime += Time.deltaTime * increaseSpeed;
+        //     yield return null;
+        // }
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            plane.transform.position,
+            new Vector3(2000f, plane.transform.position.y-100, targetPositionOnZaxis),
+            plane.transform.rotation,
+            plane.transform.rotation // no rotation here
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(2000f, plane.transform.position.y, targetPositionOnZaxis),
+            new Vector3(-500f, 300f, targetPositionOnZaxis),
+            plane.transform.rotation,
+            Quaternion.Euler(0, -90f, 0f) // no rotation here
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-500f, 300f, targetPositionOnZaxis),
+            new Vector3(-400f, 275f, -2400f),
+            plane.transform.rotation,
+            Quaternion.Euler(0, -45f, -45f)
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-400f, 275f, -2400f),
+            new Vector3(-400f, 250f, -2300f),
+            Quaternion.Euler(0, -45f, -45f),
+            Quaternion.Euler(0, 0f, 0f)
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-400f, 250f, -2300f),
+            new Vector3(-400f, 0f, -850f),
+            Quaternion.Euler(0, 0f, 0f),
+            Quaternion.Euler(0, 0f, 0f)
+        ));
     }
     private IEnumerator MoveTillSixthPlane(GameObject plane)
     {
@@ -295,45 +375,124 @@ public class FlyingPlane : MonoBehaviour
     // }
     private IEnumerator MoveTillTenthPlane(GameObject plane)
     {
-        Vector3 startPosition = plane.transform.position;
-        Vector3 targetPosition1 = new Vector3(-2000f, plane.transform.position.y-100, targetPositionOnZaxis); // ✅ Set destination (change as needed)
-        float distance1 = Vector3.Distance(startPosition, targetPosition1);
-        float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
+        // Vector3 startPosition = plane.transform.position;
+        // Vector3 targetPosition1 = new Vector3(-2000f, plane.transform.position.y-100, targetPositionOnZaxis); // ✅ Set destination (change as needed)
+        // float distance1 = Vector3.Distance(startPosition, targetPosition1);
+        // float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
 
-        float totalDuration = duration1;
-        float elapsedTime = 0f;
+        // float totalDuration = duration1;
+        // float elapsedTime = 0f;
 
-        while (elapsedTime < totalDuration)
-        {
-            float t1 = elapsedTime / duration1;
-            if (elapsedTime < duration1)
-            {
-                plane.transform.position = Vector3.Lerp(startPosition, targetPosition1, t1); // ✅ Smooth movement
-            }
-            elapsedTime += Time.deltaTime * increaseSpeed;
-            yield return null;
-        }
+        // while (elapsedTime < totalDuration)
+        // {
+        //     float t1 = elapsedTime / duration1;
+        //     if (elapsedTime < duration1)
+        //     {
+        //         plane.transform.position = Vector3.Lerp(startPosition, targetPosition1, t1); // ✅ Smooth movement
+        //     }
+        //     elapsedTime += Time.deltaTime * increaseSpeed;
+        //     yield return null;
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            plane.transform.position,
+            new Vector3(-2000f, plane.transform.position.y-100, targetPositionOnZaxis),
+            plane.transform.rotation,
+            plane.transform.rotation // no rotation here
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-2000f, plane.transform.position.y, targetPositionOnZaxis),
+            new Vector3(-500f, 300f, targetPositionOnZaxis),
+            plane.transform.rotation,
+            Quaternion.Euler(0, 90f, 0) // no rotation here
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-500f, 300f, targetPositionOnZaxis),
+            new Vector3(-400f, 275f, -2400f),
+            Quaternion.Euler(0, 90f, 0),
+            Quaternion.Euler(0, 45f, 45f)
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-400f, 275f, -2400f),
+            new Vector3(-400f, 250f, -2300f),
+            Quaternion.Euler(0, 45f, 45f),
+            Quaternion.Euler(0, 0f, 0f)
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-400f, 250f, -2300f),
+            new Vector3(-400f, 0f, -850f),
+            Quaternion.Euler(0, 0f, 0f),
+            Quaternion.Euler(0, 0f, 0f)
+        ));
     }
+    
     private IEnumerator MoveTillTwelvthPlane(GameObject plane)
     {
-        Vector3 startPosition = plane.transform.position;
-        Vector3 targetPosition1 = new Vector3(2000f, plane.transform.position.y-100, targetPositionOnZaxis); // ✅ Set destination (change as needed)
-        float distance1 = Vector3.Distance(startPosition, targetPosition1);
-        float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
+        // Vector3 startPosition = plane.transform.position;
+        // Vector3 targetPosition1 = new Vector3(2000f, plane.transform.position.y-100, targetPositionOnZaxis); // ✅ Set destination (change as needed)
+        // float distance1 = Vector3.Distance(startPosition, targetPosition1);
+        // float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
 
-        float totalDuration = duration1;
-        float elapsedTime = 0f;
+        // float totalDuration = duration1;
+        // float elapsedTime = 0f;
 
-        while (elapsedTime < totalDuration)
-        {
-            float t1 = elapsedTime / duration1;
-            if (elapsedTime < duration1)
-            {
-                plane.transform.position = Vector3.Lerp(startPosition, targetPosition1, t1); // ✅ Smooth movement
-            }
-            elapsedTime += Time.deltaTime * increaseSpeed;
-            yield return null;
-        }
+        // while (elapsedTime < totalDuration)
+        // {
+        //     float t1 = elapsedTime / duration1;
+        //     if (elapsedTime < duration1)
+        //     {
+        //         plane.transform.position = Vector3.Lerp(startPosition, targetPosition1, t1); // ✅ Smooth movement
+        //     }
+        //     elapsedTime += Time.deltaTime * increaseSpeed;
+        //     yield return null;
+        // }
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            plane.transform.position,
+            new Vector3(2000f, plane.transform.position.y-100, targetPositionOnZaxis),
+            plane.transform.rotation,
+            plane.transform.rotation // no rotation here
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(2000f, plane.transform.position.y, targetPositionOnZaxis),
+            new Vector3(-500f, 300f, targetPositionOnZaxis),
+            plane.transform.rotation,
+            Quaternion.Euler(0, -90f, 0) // no rotation here
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-500f, 300f, targetPositionOnZaxis),
+            new Vector3(-400f, 275f, -2400f),
+            plane.transform.rotation,
+            Quaternion.Euler(0, -45f, -45f)
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-400f, 275f, -2400f),
+            new Vector3(-400f, 250f, -2300f),
+            Quaternion.Euler(0, -45f, -45f),
+            Quaternion.Euler(0, 0f, 0f)
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-400f, 250f, -2300f),
+            new Vector3(-400f, 0f, -850f),
+            Quaternion.Euler(0, 0f, 0f),
+            Quaternion.Euler(0, 0f, 0f)
+        ));
     }
     // private IEnumerator MoveTillFourteenthPlane(GameObject plane)
     // {
