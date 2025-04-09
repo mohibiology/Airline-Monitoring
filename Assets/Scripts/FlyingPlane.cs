@@ -45,50 +45,57 @@ public class FlyingPlane : MonoBehaviour
         if (planePrefab != null && spawnPositions.Count > 0)
         {
             int randomIndex = Random.Range(0, spawnPositions.Count); // Pick a random spawn position
-            randomIndex = 2;
+            randomIndex = 12;
             Vector3 chosenPosition = spawnPositions[randomIndex];
             Quaternion spawnRotation = Quaternion.Euler(0,0,0);
+            GameObject newPlane = null;
+            IEnumerator movementCoroutine = null;
             if(randomIndex<=1)
             {
                 spawnRotation = Quaternion.Euler(0, 180f, 0);
-                GameObject newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
-                StartCoroutine(MoveTillSecondPlane(newPlane));
+                newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
+                movementCoroutine = (MoveTillSecondPlane(newPlane));
             }
             else if(randomIndex<=3 && randomIndex>1)
             {
                 spawnRotation = Quaternion.Euler(0, 180f, 0);
-                GameObject newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
-                StartCoroutine(MoveTillFourthPlane(newPlane));
+                newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
+                movementCoroutine = (MoveTillFourthPlane(newPlane));
             }
             else if(randomIndex<=5 && randomIndex>3)
             {
                 spawnRotation = Quaternion.Euler(0, 90f, 0);
-                GameObject newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
-                StartCoroutine(MoveTillSixthPlane(newPlane));
+                newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
+                movementCoroutine = (MoveTillSixthPlane(newPlane));
             }
             else if(randomIndex<=7 && randomIndex>5)
             {
                 spawnRotation = Quaternion.Euler(0, -90f, 0);
-                GameObject newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
-                StartCoroutine(MoveTillEighthPlane(newPlane));
+                newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
+                movementCoroutine = (MoveTillEighthPlane(newPlane));
             }
             else if(randomIndex<=9 && randomIndex>7)
             {
                 spawnRotation = Quaternion.Euler(0, 135f, 0);
-                GameObject newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
-                StartCoroutine(MoveTillTenthPlane(newPlane));
+                newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
+                movementCoroutine = (MoveTillTenthPlane(newPlane));
             }
             else if(randomIndex<=11 && randomIndex>9)
             {
                 spawnRotation = Quaternion.Euler(0, 225f, 0);
-                GameObject newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
-                StartCoroutine(MoveTillTwelvthPlane(newPlane));
+                newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
+                movementCoroutine = (MoveTillTwelvthPlane(newPlane));
             }
             else if(randomIndex<=13 && randomIndex>11)
             {
                 spawnRotation = Quaternion.Euler(0, 0f, 0);
-                GameObject newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
-                StartCoroutine(MoveTillFourteenthPlane(newPlane));
+                newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
+                movementCoroutine = (MoveTillFourteenthPlane(newPlane));
+            }
+
+            if (newPlane != null && movementCoroutine != null)
+            {
+                StartCoroutine(RunMovementAndExit(newPlane, movementCoroutine));
             }
         }
         else
@@ -96,6 +103,13 @@ public class FlyingPlane : MonoBehaviour
             Debug.LogError("⚠️ Plane Prefab is missing or no spawn positions assigned!");
         }
     }
+
+    private IEnumerator RunMovementAndExit(GameObject plane, IEnumerator movement)
+    {
+        yield return StartCoroutine(movement);
+        yield return StartCoroutine(MoveTillExit(plane));
+    }
+
     private IEnumerator MoveTillSecondPlane(GameObject plane)
     {
         // Vector3 startPosition = plane.transform.position;
@@ -524,6 +538,7 @@ public class FlyingPlane : MonoBehaviour
     //     }
     // }
 
+
     private IEnumerator MoveTillFourteenthPlane(GameObject plane)
     {
         Vector3 rotationEuler = plane.transform.rotation.eulerAngles;
@@ -546,6 +561,25 @@ public class FlyingPlane : MonoBehaviour
         ));
     }
 
+    private IEnumerator MoveTillExit(GameObject plane)
+    {
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            plane.transform.position,
+            new Vector3(-400f, 0f, 770f),
+            plane.transform.rotation,
+            plane.transform.rotation
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-400f, 0f, 770f),
+            new Vector3(-320f, 0f, 812f),
+            plane.transform.rotation,
+            Quaternion.Euler(0,90,0)
+        ));
+    }
+
     private IEnumerator MoveAndRotate(GameObject plane, Vector3 startPos, Vector3 endPos, Quaternion startRot, Quaternion endRot)
     {
         float distance = Vector3.Distance(startPos, endPos);
@@ -554,7 +588,7 @@ public class FlyingPlane : MonoBehaviour
         float angle = Quaternion.Angle(startRot, endRot);
         float rotationDuration = (angle > 0.01f) ? angle / rotationSpeed : 0.1f;
 
-        float totalDuration = Mathf.Max(duration, rotationDuration);
+        float totalDuration = Mathf.Max(rotationDuration, duration);
         float elapsedTime = 0f;
 
         while (elapsedTime < totalDuration)
