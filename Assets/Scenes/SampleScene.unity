@@ -3389,8 +3389,8 @@ MonoBehaviour:
   planeHandler: {fileID: 2122336549}
   spawnInterval: 3
   targetPositionOnZaxis: -2500
-  moveSpeed: 100
-  rotationSpeed: 40
+  moveSpeed: 140
+  rotationSpeed: 70
   increaseSpeed: 1
   spawnPositions:
   - {x: -2000, y: 600, z: 2000}
