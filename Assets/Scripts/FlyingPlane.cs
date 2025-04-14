@@ -45,14 +45,14 @@ public class FlyingPlane : MonoBehaviour
         if (planePrefab != null && spawnPositions.Count > 0)
         {
             int randomIndex = Random.Range(0, spawnPositions.Count); // Pick a random spawn position
-            randomIndex =11;
+            randomIndex = 1;
             Vector3 chosenPosition = spawnPositions[randomIndex];
             Quaternion spawnRotation = Quaternion.Euler(0,0,0);
             GameObject newPlane = null;
             IEnumerator movementCoroutine = null;
             if(randomIndex<=1)
             {
-                spawnRotation = Quaternion.Euler(0, 180f, 0);
+                spawnRotation = Quaternion.Euler(0, -180f, 0);
                 newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
                 movementCoroutine = (MoveTillSecondPlane(newPlane));
             }
@@ -112,46 +112,101 @@ public class FlyingPlane : MonoBehaviour
 
     private IEnumerator MoveTillSecondPlane(GameObject plane)
     {
-
         yield return StartCoroutine(MoveAndRotate(
             plane,
             plane.transform.position,
-            new Vector3(-2000f, plane.transform.position.y-100, targetPositionOnZaxis),
+            new Vector3(-2000f, 300, targetPositionOnZaxis),
             plane.transform.rotation,
-            plane.transform.rotation // no rotation here
+            plane.transform.rotation
         ));
 
         yield return StartCoroutine(MoveAndRotate(
             plane,
             new Vector3(-2000f, plane.transform.position.y, targetPositionOnZaxis),
-            new Vector3(-500f, 300f, targetPositionOnZaxis),
+            new Vector3(-1500f, 275f, targetPositionOnZaxis),
             plane.transform.rotation,
-            Quaternion.Euler(0, 90f, 0) // no rotation here
+            Quaternion.Euler(0, 90f, 45f) 
         ));
 
         yield return StartCoroutine(MoveAndRotate(
             plane,
-            new Vector3(-500f, 300f, targetPositionOnZaxis),
-            new Vector3(-400f, 275f, -2400f),
+            new Vector3(-1500f, 275f, targetPositionOnZaxis),
+            new Vector3(-1200f, 250f, targetPositionOnZaxis),
             plane.transform.rotation,
-            Quaternion.Euler(0, 45f, 45f)
+            Quaternion.Euler(0, 90f, 0f)
         ));
 
         yield return StartCoroutine(MoveAndRotate(
             plane,
-            new Vector3(-400f, 275f, -2400f),
-            new Vector3(-400f, 250f, -2300f),
-            Quaternion.Euler(0, 45f, 45f),
+            new Vector3(-1200f, 250f, targetPositionOnZaxis),
+            new Vector3(-1000f, 220f, targetPositionOnZaxis),
+            plane.transform.rotation,
+            plane.transform.rotation
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-1000f, 220f, targetPositionOnZaxis),
+            new Vector3(-400f, 150f, -2200f),
+            plane.transform.rotation,
+            Quaternion.Euler(0, 0f, 45f)
+        ));
+
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-400f, 150f, -2200f),
+            new Vector3(-400f, 130f, -1900),
+            plane.transform.rotation,
             Quaternion.Euler(0, 0f, 0f)
         ));
 
         yield return StartCoroutine(MoveAndRotate(
             plane,
-            new Vector3(-400f, 250f, -2300f),
+            new Vector3(-400f, 130f, -1900f),
             new Vector3(-400f, 0f, -850f),
             Quaternion.Euler(0, 0f, 0f),
             Quaternion.Euler(0, 0f, 0f)
         ));
+
+        // yield return StartCoroutine(MoveAndRotate(
+        //     plane,
+        //     plane.transform.position,
+        //     new Vector3(-2000f, plane.transform.position.y-100, targetPositionOnZaxis),
+        //     plane.transform.rotation,
+        //     plane.transform.rotation // no rotation here
+        // ));
+
+        // yield return StartCoroutine(MoveAndRotate(
+        //     plane,
+        //     new Vector3(-2000f, plane.transform.position.y, targetPositionOnZaxis),
+        //     new Vector3(-500f, 300f, targetPositionOnZaxis),
+        //     plane.transform.rotation,
+        //     Quaternion.Euler(0, 90f, 0) // no rotation here
+        // ));
+
+        // yield return StartCoroutine(MoveAndRotate(
+        //     plane,
+        //     new Vector3(-500f, 300f, targetPositionOnZaxis),
+        //     new Vector3(-400f, 275f, -2400f),
+        //     plane.transform.rotation,
+        //     Quaternion.Euler(0, 45f, 45f)
+        // ));
+
+        // yield return StartCoroutine(MoveAndRotate(
+        //     plane,
+        //     new Vector3(-400f, 275f, -2400f),
+        //     new Vector3(-400f, 250f, -2300f),
+        //     Quaternion.Euler(0, 45f, 45f),
+        //     Quaternion.Euler(0, 0f, 0f)
+        // ));
+
+        // yield return StartCoroutine(MoveAndRotate(
+        //     plane,
+        //     new Vector3(-400f, 250f, -2300f),
+        //     new Vector3(-400f, 0f, -850f),
+        //     Quaternion.Euler(0, 0f, 0f),
+        //     Quaternion.Euler(0, 0f, 0f)
+        // ));
     }
     private IEnumerator MoveTillFourthPlane(GameObject plane)
     {
