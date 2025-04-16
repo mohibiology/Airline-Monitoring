@@ -45,7 +45,7 @@ public class FlyingPlane : MonoBehaviour
         if (planePrefab != null && spawnPositions.Count > 0)
         {
             int randomIndex = Random.Range(0, spawnPositions.Count); // Pick a random spawn position
-            randomIndex = 5;
+            randomIndex = 13;
             Vector3 chosenPosition = spawnPositions[randomIndex];
             Quaternion spawnRotation = Quaternion.Euler(0,0,0);
             GameObject newPlane = null;
@@ -431,13 +431,21 @@ public class FlyingPlane : MonoBehaviour
         //     currentRotation
         // ));
 
+        // yield return StartCoroutine(MoveAndRotate(
+        //     plane,
+        //     new Vector3(-400f, 300f, targetPositionOnZaxis),
+        //     new Vector3(-400f, 0f, -850f),
+        //     currentRotation,
+        //     currentRotation
+        // ));
         yield return StartCoroutine(MoveAndRotate(
             plane,
-            new Vector3(-400f, 300f, targetPositionOnZaxis),
+            new Vector3(-400f, 0f, -900),
             new Vector3(-400f, 0f, -850f),
             currentRotation,
             currentRotation
         ));
+
     }
 
     private IEnumerator MoveTillExit(GameObject plane)
@@ -450,53 +458,61 @@ public class FlyingPlane : MonoBehaviour
             plane.transform.rotation
         ));
 
-        yield return StartCoroutine(MoveAndRotate(
+        yield return StartCoroutine(MoveAlongBezier(
             plane,
             new Vector3(-400f, 0f, 750f),
             new Vector3(-330f, 0f, 812f),
             plane.transform.rotation,
-            Quaternion.Euler(0,90,0)
+            Quaternion.Euler(0, 90, 0)
         ));
 
-        yield return StartCoroutine(MoveAndRotate(
-            plane,
-            new Vector3(-330f, 0f, 812f),
-            new Vector3(-250f, 0f, 812f),
-            plane.transform.rotation,
-            plane.transform.rotation
-        ));
+        // yield return StartCoroutine(MoveAndRotate(
+        //     plane,
+        //     new Vector3(-400f, 0f, 750f),
+        //     new Vector3(-330f, 0f, 812f),
+        //     plane.transform.rotation,
+        //     Quaternion.Euler(0,90,0)
+        // ));
 
-        yield return StartCoroutine(MoveAndRotate(
-            plane,
-            new Vector3(-250f, 0f, 812f),
-            new Vector3(-199f, 0f, 730f),
-            plane.transform.rotation,
-            Quaternion.Euler(0,180,0)
-        ));
+        // yield return StartCoroutine(MoveAndRotate(
+        //     plane,
+        //     new Vector3(-330f, 0f, 812f),
+        //     new Vector3(-250f, 0f, 812f),
+        //     plane.transform.rotation,
+        //     plane.transform.rotation
+        // ));
 
-        yield return StartCoroutine(MoveAndRotate(
-            plane,
-            new Vector3(-199f, 0f, 730f),
-            new Vector3(-199f, 0f, 650f),
-            plane.transform.rotation,
-            plane.transform.rotation
-        ));
+        // yield return StartCoroutine(MoveAndRotate(
+        //     plane,
+        //     new Vector3(-250f, 0f, 812f),
+        //     new Vector3(-199f, 0f, 730f),
+        //     plane.transform.rotation,
+        //     Quaternion.Euler(0,180,0)
+        // ));
 
-        yield return StartCoroutine(MoveAndRotate(
-            plane,
-            new Vector3(-199f, 0f, 650f),
-            new Vector3(-236f, 0f, 550f),
-            plane.transform.rotation,
-            Quaternion.Euler(0,225,0)
-        ));
+        // yield return StartCoroutine(MoveAndRotate(
+        //     plane,
+        //     new Vector3(-199f, 0f, 730f),
+        //     new Vector3(-199f, 0f, 650f),
+        //     plane.transform.rotation,
+        //     plane.transform.rotation
+        // ));
 
-        yield return StartCoroutine(MoveAndRotate(
-            plane,
-            new Vector3(-236f, 0f, 550f),
-            new Vector3(-315f, 0f, 472f),
-            plane.transform.rotation,
-            Quaternion.Euler(0,225,0)
-        ));
+        // yield return StartCoroutine(MoveAndRotate(
+        //     plane,
+        //     new Vector3(-199f, 0f, 650f),
+        //     new Vector3(-236f, 0f, 550f),
+        //     plane.transform.rotation,
+        //     Quaternion.Euler(0,225,0)
+        // ));
+
+        // yield return StartCoroutine(MoveAndRotate(
+        //     plane,
+        //     new Vector3(-236f, 0f, 550f),
+        //     new Vector3(-315f, 0f, 472f),
+        //     plane.transform.rotation,
+        //     Quaternion.Euler(0,225,0)
+        // ));
     }
 
     private IEnumerator MoveAndRotate(GameObject plane, Vector3 startPos, Vector3 endPos, Quaternion startRot, Quaternion endRot)
@@ -524,4 +540,57 @@ public class FlyingPlane : MonoBehaviour
         plane.transform.rotation = endRot;
     }
 
+    private IEnumerator MoveAlongBezier(GameObject plane, Vector3 startPos, Vector3 endPos, Quaternion startRot, Quaternion endRot)
+    {
+        moveSpeed = 75f;
+        float distance = Vector3.Distance(startPos, endPos);
+        float duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
+
+        // Define control points for cubic Bezier
+        Vector3 direction = (endPos - startPos).normalized;
+        Vector3 right = Vector3.Cross(Vector3.up, direction); // perpendicular to path
+
+        // Control point offset (adjust this to get wider or tighter turns)
+        float controlOffset = 40f;
+
+        Vector3 p0 = startPos;
+        Vector3 p3 = endPos;
+        Vector3 p1 = p0 + plane.transform.forward * controlOffset;  // pushes forward from start
+        Vector3 p2 = p3 - Quaternion.Euler(0, 90, 0) * Vector3.forward * controlOffset; // curves into the end
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            // Bezier formula
+            Vector3 pos =
+                Mathf.Pow(1 - t, 3) * p0 +
+                3 * Mathf.Pow(1 - t, 2) * t * p1 +
+                3 * (1 - t) * Mathf.Pow(t, 2) * p2 +
+                Mathf.Pow(t, 3) * p3;
+
+            // Get direction for rotation
+            Vector3 forwardDir = BezierTangent(p0, p1, p2, p3, t).normalized;
+            if (forwardDir != Vector3.zero)
+                plane.transform.rotation = Quaternion.LookRotation(forwardDir);
+
+            plane.transform.position = pos;
+
+            elapsed += Time.deltaTime * increaseSpeed;
+            yield return null;
+        }
+
+        // Final snap
+        plane.transform.position = p3;
+        plane.transform.rotation = endRot;
+    }
+    private Vector3 BezierTangent(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t)
+    {
+        return
+            3 * Mathf.Pow(1 - t, 2) * (p1 - p0) +
+            6 * (1 - t) * t * (p2 - p1) +
+            3 * Mathf.Pow(t, 2) * (p3 - p2);
+    }
 }
