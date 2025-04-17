@@ -466,53 +466,45 @@ public class FlyingPlane : MonoBehaviour
             Quaternion.Euler(0, 90, 0)
         ));
 
-        // yield return StartCoroutine(MoveAndRotate(
-        //     plane,
-        //     new Vector3(-400f, 0f, 750f),
-        //     new Vector3(-330f, 0f, 812f),
-        //     plane.transform.rotation,
-        //     Quaternion.Euler(0,90,0)
-        // ));
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-330f, 0f, 812f),
+            new Vector3(-250f, 0f, 812f),
+            plane.transform.rotation,
+            plane.transform.rotation
+        ));
 
-        // yield return StartCoroutine(MoveAndRotate(
-        //     plane,
-        //     new Vector3(-330f, 0f, 812f),
-        //     new Vector3(-250f, 0f, 812f),
-        //     plane.transform.rotation,
-        //     plane.transform.rotation
-        // ));
+        yield return StartCoroutine(MoveAlongBezier(
+            plane,
+            new Vector3(-250f, 0f, 812f),
+            new Vector3(-199f, 0f, 730f),
+            plane.transform.rotation,
+            Quaternion.Euler(0,180,0)
+        ));
 
-        // yield return StartCoroutine(MoveAndRotate(
-        //     plane,
-        //     new Vector3(-250f, 0f, 812f),
-        //     new Vector3(-199f, 0f, 730f),
-        //     plane.transform.rotation,
-        //     Quaternion.Euler(0,180,0)
-        // ));
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-199f, 0f, 730f),
+            new Vector3(-199f, 0f, 650f),
+            plane.transform.rotation,
+            plane.transform.rotation
+        ));
 
-        // yield return StartCoroutine(MoveAndRotate(
-        //     plane,
-        //     new Vector3(-199f, 0f, 730f),
-        //     new Vector3(-199f, 0f, 650f),
-        //     plane.transform.rotation,
-        //     plane.transform.rotation
-        // ));
+        yield return StartCoroutine(MoveAlongBezier(
+            plane,
+            new Vector3(-199f, 0f, 650f),
+            new Vector3(-236f, 0f, 550f),
+            plane.transform.rotation,
+            Quaternion.Euler(0,225,0)
+        ));
 
-        // yield return StartCoroutine(MoveAndRotate(
-        //     plane,
-        //     new Vector3(-199f, 0f, 650f),
-        //     new Vector3(-236f, 0f, 550f),
-        //     plane.transform.rotation,
-        //     Quaternion.Euler(0,225,0)
-        // ));
-
-        // yield return StartCoroutine(MoveAndRotate(
-        //     plane,
-        //     new Vector3(-236f, 0f, 550f),
-        //     new Vector3(-315f, 0f, 472f),
-        //     plane.transform.rotation,
-        //     Quaternion.Euler(0,225,0)
-        // ));
+        yield return StartCoroutine(MoveAndRotate(
+            plane,
+            new Vector3(-236f, 0f, 550f),
+            new Vector3(-315f, 0f, 472f),
+            plane.transform.rotation,
+            Quaternion.Euler(0,225,0)
+        ));
     }
 
     private IEnumerator MoveAndRotate(GameObject plane, Vector3 startPos, Vector3 endPos, Quaternion startRot, Quaternion endRot)
@@ -555,8 +547,8 @@ public class FlyingPlane : MonoBehaviour
 
         Vector3 p0 = startPos;
         Vector3 p3 = endPos;
-        Vector3 p1 = p0 + plane.transform.forward * controlOffset;  // pushes forward from start
-        Vector3 p2 = p3 - Quaternion.Euler(0, 90, 0) * Vector3.forward * controlOffset; // curves into the end
+        Vector3 p1 = p0 + (startRot * Vector3.forward) * controlOffset;
+        Vector3 p2 = p3 - (endRot * Vector3.forward) * controlOffset;
 
         float elapsed = 0f;
 
