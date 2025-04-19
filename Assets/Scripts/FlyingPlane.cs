@@ -36,16 +36,16 @@ public class FlyingPlane : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(spawnInterval); // Wait for the interval
-            SpawnPlane();
+            yield return StartCoroutine(SpawnPlane());
         }
     }
 
-    private void SpawnPlane()
+    private IEnumerator SpawnPlane()
     {
         if (planePrefab != null && spawnPositions.Count > 0)
         {
             int randomIndex = Random.Range(0, spawnPositions.Count); // Pick a random spawn position
-            randomIndex = 13;
+            randomIndex = 1;
             Vector3 chosenPosition = spawnPositions[randomIndex];
             Quaternion spawnRotation = Quaternion.Euler(0,0,0);
             GameObject newPlane = null;
@@ -54,7 +54,7 @@ public class FlyingPlane : MonoBehaviour
             {
                 spawnRotation = Quaternion.Euler(0, -180f, 0);
                 newPlane = Instantiate(planePrefab, chosenPosition, spawnRotation, planeHandler);
-                movementCoroutine = (MoveTillSecondPlane(newPlane));
+                yield return StartCoroutine((MoveTillSecondPlane(newPlane)));
             }
             else if(randomIndex<=3 && randomIndex>1)
             {
@@ -93,7 +93,7 @@ public class FlyingPlane : MonoBehaviour
                 movementCoroutine = (MoveTillFourteenthPlane(newPlane));
             }
 
-            if (newPlane != null && movementCoroutine != null)
+            if (newPlane != null)
             {
                 StartCoroutine(RunMovementAndExit(newPlane, movementCoroutine));
             }
@@ -120,7 +120,7 @@ public class FlyingPlane : MonoBehaviour
             plane.transform.rotation
         ));
 
-        yield return StartCoroutine(MoveAndRotate(
+        yield return StartCoroutine(MoveAlongBezierAir(
             plane,
             new Vector3(-2000f, plane.transform.position.y, targetPositionOnZaxis),
             new Vector3(-1500f, 275f, targetPositionOnZaxis),
@@ -144,7 +144,7 @@ public class FlyingPlane : MonoBehaviour
             plane.transform.rotation
         ));
 
-        yield return StartCoroutine(MoveAndRotate(
+        yield return StartCoroutine(MoveAlongBezierAir(
             plane,
             new Vector3(-800f, 220f, targetPositionOnZaxis),
             new Vector3(-400f, 200f, -2200f),
@@ -534,7 +534,7 @@ public class FlyingPlane : MonoBehaviour
 
     private IEnumerator MoveAlongBezier(GameObject plane, Vector3 startPos, Vector3 endPos, Quaternion startRot, Quaternion endRot)
     {
-        moveSpeed = 75f;
+        float moveSpeed = 75f;
         float distance = Vector3.Distance(startPos, endPos);
         float duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
 
@@ -585,4 +585,48 @@ public class FlyingPlane : MonoBehaviour
             6 * (1 - t) * t * (p2 - p1) +
             3 * Mathf.Pow(t, 2) * (p3 - p2);
     }
+
+
+    private IEnumerator MoveAlongBezierAir(GameObject plane, Vector3 startPos, Vector3 endPos, Quaternion startRot, Quaternion endRot)
+    {
+        float moveSpeed = 125f;
+        float distance = Vector3.Distance(startPos, endPos);
+        float duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
+
+        float controlOffset = 100f; // Wider curve for flight-like turn
+
+        Vector3 p0 = startPos;
+        Vector3 p3 = endPos;
+        Vector3 p1 = p0 + (startRot * Vector3.forward) * controlOffset;
+        Vector3 p2 = p3 - (endRot * Vector3.forward) * controlOffset;
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            // Bezier curve
+            Vector3 pos =
+                Mathf.Pow(1 - t, 3) * p0 +
+                3 * Mathf.Pow(1 - t, 2) * t * p1 +
+                3 * (1 - t) * Mathf.Pow(t, 2) * p2 +
+                Mathf.Pow(t, 3) * p3;
+
+            // Smooth rotation interpolation including Y and Z tilt
+            Quaternion rot = Quaternion.Slerp(startRot, endRot, t);
+
+            plane.transform.position = pos;
+            plane.transform.rotation = rot;
+
+            elapsed += Time.deltaTime * increaseSpeed;
+            yield return null;
+        }
+
+        // Final snap to end values
+        plane.transform.position = p3;
+        plane.transform.rotation = endRot;
+    }
+
+
 }
