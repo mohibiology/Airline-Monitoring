@@ -3387,7 +3387,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   planePrefab: {fileID: 9197765847602058572, guid: 05316001ee2a9dc428615d75dda14587, type: 3}
   planeHandler: {fileID: 2122336549}
-  spawnInterval: 3
+  spawnInterval: 2
   targetPositionOnZaxis: -2500
   moveSpeed: 140
   rotationSpeed: 140
