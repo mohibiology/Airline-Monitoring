@@ -56,7 +56,7 @@ public class ObjectActionHandler : MonoBehaviour
 
         if (tag == "BeforeLineUpPlane")
         {
-            targetPosition = new Vector3(positionOnXaxis, 0, targetObject.transform.position.z);
+            targetPosition = new Vector3(-175, 0, targetObject.transform.position.z);
             StartCoroutine(RotateMoveRotate(targetObject, 
             Quaternion.Euler(0, rotationOnYaxis, 0), 
             targetPosition,
@@ -367,19 +367,21 @@ public class ObjectActionHandler : MonoBehaviour
         targetObject.transform.position = targetPosition;
 
         // Step 3: Final Rotation
-        elapsedTime = 0f;
-        Quaternion rotationAfterMove = targetObject.transform.rotation;
-        float angle2 = Quaternion.Angle(rotationAfterMove, finalRotation);
-        float rotationDuration2 = angle2 / rotationSpeed;
+        // elapsedTime = 0f;
+        // Quaternion rotationAfterMove = targetObject.transform.rotation;
+        // float angle2 = Quaternion.Angle(rotationAfterMove, finalRotation);
+        // float rotationDuration2 = angle2 / rotationSpeed;
 
-        while (elapsedTime < rotationDuration2)
-        {
-            float t = elapsedTime / rotationDuration2;
-            targetObject.transform.rotation = Quaternion.Slerp(rotationAfterMove, finalRotation, t);
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
+        // while (elapsedTime < rotationDuration2)
+        // {
+        //     float t = elapsedTime / rotationDuration2;
+        //     targetObject.transform.rotation = Quaternion.Slerp(rotationAfterMove, finalRotation, t);
+        //     elapsedTime += Time.deltaTime;
+        //     yield return null;
+        // }
+        yield return StartCoroutine(MoveAlongBezier(targetObject, targetObject.transform.position,new Vector3(-225, 0f, targetObject.transform.position.z-50),targetObject.transform.rotation,finalRotation));
         targetObject.transform.rotation = finalRotation;
+
         targetObject.tag = "ProcessingCompletion";
 
         onComplete?.Invoke();
@@ -526,6 +528,8 @@ public class ObjectActionHandler : MonoBehaviour
                 movingPlanes[i].transform.position = targetPositions[i];
             }
         }
+
+        
     }
 
 
@@ -543,4 +547,59 @@ public class ObjectActionHandler : MonoBehaviour
     {
         return GameObject.FindGameObjectWithTag("TakeOffPlane") != null;
     }
+
+        private IEnumerator MoveAlongBezier(GameObject plane, Vector3 startPos, Vector3 endPos, Quaternion startRot, Quaternion endRot)
+    {
+        float moveSpeed = 30f;
+        float distance = Vector3.Distance(startPos, endPos);
+        float duration = (distance > 0.01f) ? distance / moveSpeed : 0.1f;
+
+        // Define control points for cubic Bezier
+        Vector3 direction = (endPos - startPos).normalized;
+        Vector3 right = Vector3.Cross(Vector3.up, direction); // perpendicular to path
+
+        // Control point offset (adjust this to get wider or tighter turns)
+        float controlOffset = 40f;
+
+        Vector3 p0 = startPos;
+        Vector3 p3 = endPos;
+        Vector3 p1 = p0 + (startRot * Vector3.forward) * controlOffset;
+        Vector3 p2 = p3 - (endRot * Vector3.forward) * controlOffset;
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            // Bezier formula
+            Vector3 pos =
+                Mathf.Pow(1 - t, 3) * p0 +
+                3 * Mathf.Pow(1 - t, 2) * t * p1 +
+                3 * (1 - t) * Mathf.Pow(t, 2) * p2 +
+                Mathf.Pow(t, 3) * p3;
+
+            // Get direction for rotation
+            Vector3 forwardDir = BezierTangent(p0, p1, p2, p3, t).normalized;
+            if (forwardDir != Vector3.zero)
+                plane.transform.rotation = Quaternion.LookRotation(forwardDir);
+
+            plane.transform.position = pos;
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // Final snap
+        plane.transform.position = p3;
+        plane.transform.rotation = endRot;
+    }
+
+        private Vector3 BezierTangent(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t)
+        {
+            return
+                3 * Mathf.Pow(1 - t, 2) * (p1 - p0) +
+                6 * (1 - t) * t * (p2 - p1) +
+                3 * Mathf.Pow(t, 2) * (p3 - p2);
+        }
 }
