@@ -113,51 +113,51 @@ public class ObjectActionHandler : MonoBehaviour
 
     private IEnumerator RotateMoveSimultaneously(GameObject targetObject, Vector3 targetPosition, System.Action onComplete)
     {
-        float elapsedTime = 0f;
+        // float elapsedTime = 0f;
 
-        // First target position & rotation
-        Quaternion startRotation = targetObject.transform.rotation;
-        Quaternion targetRotation1 = Quaternion.Euler(0, 250f, 0);
-        Vector3 startPosition = targetObject.transform.position;
-        Vector3 beforeTargetPosition = new Vector3(-275, 0, -1086);
+        // // First target position & rotation
+        // Quaternion startRotation = targetObject.transform.rotation;
+        // Quaternion targetRotation1 = Quaternion.Euler(0, 250f, 0);
+        // Vector3 startPosition = targetObject.transform.position;
+        // Vector3 beforeTargetPosition = new Vector3(-275, 0, -1086);
 
-        float distance1 = Vector3.Distance(startPosition, beforeTargetPosition);
-        float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
-        float angle1 = Quaternion.Angle(startRotation, targetRotation1);
-        float rotationDuration1 = angle1 / rotationSpeed;
+        // float distance1 = Vector3.Distance(startPosition, beforeTargetPosition);
+        // float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
+        // float angle1 = Quaternion.Angle(startRotation, targetRotation1);
+        // float rotationDuration1 = angle1 / rotationSpeed;
 
-        // Second target position & rotation
+        // // Second target position & rotation
         Quaternion targetRotation2 = Quaternion.Euler(0, rotationOnYaxis, 0);
-        float distance2 = Vector3.Distance(beforeTargetPosition, targetPosition);
-        float duration2 = (distance2 > 0.01f) ? distance2 / moveSpeed : 0.1f;
-        float angle2 = Quaternion.Angle(targetRotation1, targetRotation2);
-        float rotationDuration2 = angle2 / rotationSpeed;
+        // float distance2 = Vector3.Distance(beforeTargetPosition, targetPosition);
+        // float duration2 = (distance2 > 0.01f) ? distance2 / moveSpeed : 0.1f;
+        // float angle2 = Quaternion.Angle(targetRotation1, targetRotation2);
+        // float rotationDuration2 = angle2 / rotationSpeed;
 
-        float totalDuration = duration1 + duration2;
-        float totalRotationDuration = rotationDuration1 + rotationDuration2;
+        // float totalDuration = duration1 + duration2;
+        // float totalRotationDuration = rotationDuration1 + rotationDuration2;
 
-        while (elapsedTime < Mathf.Max(totalDuration, totalRotationDuration))
-        {
-            float t1 = Mathf.Clamp01(elapsedTime / Mathf.Max(duration1, rotationDuration1)); // Normalize phase 1
-            float t2 = Mathf.Clamp01((elapsedTime - duration1) / Mathf.Max(duration2, rotationDuration2)); // Normalize phase 2
+        // while (elapsedTime < Mathf.Max(totalDuration, totalRotationDuration))
+        // {
+        //     float t1 = Mathf.Clamp01(elapsedTime / Mathf.Max(duration1, rotationDuration1)); // Normalize phase 1
+        //     float t2 = Mathf.Clamp01((elapsedTime - duration1) / Mathf.Max(duration2, rotationDuration2)); // Normalize phase 2
 
-            if (elapsedTime < duration1)
-            {
-                // Phase 1 movement and rotation
-                targetObject.transform.position = Vector3.Lerp(startPosition, beforeTargetPosition, t1);
-                targetObject.transform.rotation = Quaternion.Slerp(startRotation, targetRotation1, t1);
-            }
-            else
-            {
-                // Phase 2 movement and rotation
-                targetObject.transform.position = Vector3.Lerp(beforeTargetPosition, targetPosition, t2);
-                targetObject.transform.rotation = Quaternion.Slerp(targetRotation1, targetRotation2, t2);
-            }
+        //     if (elapsedTime < duration1)
+        //     {
+        //         // Phase 1 movement and rotation
+        //         targetObject.transform.position = Vector3.Lerp(startPosition, beforeTargetPosition, t1);
+        //         targetObject.transform.rotation = Quaternion.Slerp(startRotation, targetRotation1, t1);
+        //     }
+        //     else
+        //     {
+        //         // Phase 2 movement and rotation
+        //         targetObject.transform.position = Vector3.Lerp(beforeTargetPosition, targetPosition, t2);
+        //         targetObject.transform.rotation = Quaternion.Slerp(targetRotation1, targetRotation2, t2);
+        //     }
 
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
-
+        //     elapsedTime += Time.deltaTime;
+        //     yield return null;
+        // }
+        yield return StartCoroutine(MoveAlongBezier(targetObject, targetObject.transform.position,targetPosition,targetObject.transform.rotation,targetRotation2));
         // Ensure final values are set exactly
         targetObject.transform.position = targetPosition;
         targetObject.transform.rotation = targetRotation2;
@@ -176,49 +176,51 @@ public class ObjectActionHandler : MonoBehaviour
         targetObject.tag="PlaneTookOff";
         float elapsedTime = 0f;
 
-        // First target position & rotation
+        // // First target position & rotation
         Vector3 targetPosition = triggerObjectBeforeTakeOff.transform.position;
-        Quaternion startRotation = targetObject.transform.rotation;
-        Quaternion targetRotation1 = Quaternion.Euler(0, 310f, 0);
-        Vector3 startPosition = targetObject.transform.position;
-        Vector3 beforeTargetPosition = new Vector3(-375, 0, -1070);
+        // Quaternion startRotation = targetObject.transform.rotation;
+        // Quaternion targetRotation1 = Quaternion.Euler(0, 310f, 0);
+        // Vector3 startPosition = targetObject.transform.position;
+        // Vector3 beforeTargetPosition = new Vector3(-375, 0, -1070);
 
-        float distance1 = Vector3.Distance(startPosition, beforeTargetPosition);
-        float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
-        float angle1 = Quaternion.Angle(startRotation, targetRotation1);
-        float rotationDuration1 = angle1 / rotationSpeed;
+        // float distance1 = Vector3.Distance(startPosition, beforeTargetPosition);
+        // float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
+        // float angle1 = Quaternion.Angle(startRotation, targetRotation1);
+        // float rotationDuration1 = angle1 / rotationSpeed;
 
-        // Second target position & rotation
+        // // Second target position & rotation
         Quaternion targetRotation2 = Quaternion.Euler(0, 360f, 0);
-        float distance2 = Vector3.Distance(beforeTargetPosition, targetPosition);
-        float duration2 = (distance2 > 0.01f) ? distance2 / moveSpeed : 0.1f;
-        float angle2 = Quaternion.Angle(targetRotation1, targetRotation2);
-        float rotationDuration2 = angle2 / rotationSpeed;
+        // float distance2 = Vector3.Distance(beforeTargetPosition, targetPosition);
+        // float duration2 = (distance2 > 0.01f) ? distance2 / moveSpeed : 0.1f;
+        // float angle2 = Quaternion.Angle(targetRotation1, targetRotation2);
+        // float rotationDuration2 = angle2 / rotationSpeed;
 
-        float totalDuration = duration1 + duration2;
-        float totalRotationDuration = rotationDuration1 + rotationDuration2;
+        // float totalDuration = duration1 + duration2;
+        // float totalRotationDuration = rotationDuration1 + rotationDuration2;
 
-        while (elapsedTime < Mathf.Max(totalDuration, totalRotationDuration))
-        {
-            float t1 = Mathf.Clamp01(elapsedTime / Mathf.Max(duration1, rotationDuration1)); // Normalize phase 1
-            float t2 = Mathf.Clamp01((elapsedTime - duration1) / Mathf.Max(duration2, rotationDuration2)); // Normalize phase 2
+        // while (elapsedTime < Mathf.Max(totalDuration, totalRotationDuration))
+        // {
+        //     float t1 = Mathf.Clamp01(elapsedTime / Mathf.Max(duration1, rotationDuration1)); // Normalize phase 1
+        //     float t2 = Mathf.Clamp01((elapsedTime - duration1) / Mathf.Max(duration2, rotationDuration2)); // Normalize phase 2
 
-            if (elapsedTime < duration1)
-            {
-                // Phase 1 movement and rotation
-                targetObject.transform.position = Vector3.Lerp(startPosition, beforeTargetPosition, t1);
-                targetObject.transform.rotation = Quaternion.Slerp(startRotation, targetRotation1, t1);
-            }
-            else
-            {
-                // Phase 2 movement and rotation
-                targetObject.transform.position = Vector3.Lerp(beforeTargetPosition, targetPosition, t2);
-                targetObject.transform.rotation = Quaternion.Slerp(targetRotation1, targetRotation2, t2);
-            }
+        //     if (elapsedTime < duration1)
+        //     {
+        //         // Phase 1 movement and rotation
+        //         targetObject.transform.position = Vector3.Lerp(startPosition, beforeTargetPosition, t1);
+        //         targetObject.transform.rotation = Quaternion.Slerp(startRotation, targetRotation1, t1);
+        //     }
+        //     else
+        //     {
+        //         // Phase 2 movement and rotation
+        //         targetObject.transform.position = Vector3.Lerp(beforeTargetPosition, targetPosition, t2);
+        //         targetObject.transform.rotation = Quaternion.Slerp(targetRotation1, targetRotation2, t2);
+        //     }
 
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
+        //     elapsedTime += Time.deltaTime;
+        //     yield return null;
+        // }
+        yield return StartCoroutine(MoveAlongBezier(targetObject, targetObject.transform.position, targetPosition, targetObject.transform.rotation, targetRotation2));
+
         Vector3 initialPosition = targetObject.transform.position;
         elapsedTime = 0f;
         Vector3 initialTakeoffPosition = new Vector3(-400f, 0, triggerTakeOff.transform.position.z);
@@ -274,52 +276,54 @@ public class ObjectActionHandler : MonoBehaviour
     }
     private IEnumerator RotateMoveSimultaneouslyForTakeOff(GameObject targetObject)
     {
-        float elapsedTime = 0f;
+        // float elapsedTime = 0f;
 
-        // First target position & rotation
+        // // First target position & rotation
         Vector3 targetPosition = triggerObjectBeforeTakeOff.transform.position;
-        Quaternion startRotation = targetObject.transform.rotation;
-        Quaternion targetRotation1 = Quaternion.Euler(0, 310f, 0);
-        Vector3 startPosition = targetObject.transform.position;
-        Vector3 beforeTargetPosition = new Vector3(-375, 0, -1070);
+        // Quaternion startRotation = targetObject.transform.rotation;
+        // Quaternion targetRotation1 = Quaternion.Euler(0, 310f, 0);
+        // Vector3 startPosition = targetObject.transform.position;
+        // Vector3 beforeTargetPosition = new Vector3(-375, 0, -1070);
 
-        float distance1 = Vector3.Distance(startPosition, beforeTargetPosition);
-        float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
-        float angle1 = Quaternion.Angle(startRotation, targetRotation1);
-        float rotationDuration1 = angle1 / rotationSpeed;
+        // float distance1 = Vector3.Distance(startPosition, beforeTargetPosition);
+        // float duration1 = (distance1 > 0.01f) ? distance1 / moveSpeed : 0.1f;
+        // float angle1 = Quaternion.Angle(startRotation, targetRotation1);
+        // float rotationDuration1 = angle1 / rotationSpeed;
 
-        // Second target position & rotation
+        // // Second target position & rotation
         Quaternion targetRotation2 = Quaternion.Euler(0, 360f, 0);
-        float distance2 = Vector3.Distance(beforeTargetPosition, targetPosition);
-        float duration2 = (distance2 > 0.01f) ? distance2 / moveSpeed : 0.1f;
-        float angle2 = Quaternion.Angle(targetRotation1, targetRotation2);
-        float rotationDuration2 = angle2 / rotationSpeed;
+        // float distance2 = Vector3.Distance(beforeTargetPosition, targetPosition);
+        // float duration2 = (distance2 > 0.01f) ? distance2 / moveSpeed : 0.1f;
+        // float angle2 = Quaternion.Angle(targetRotation1, targetRotation2);
+        // float rotationDuration2 = angle2 / rotationSpeed;
 
-        float totalDuration = duration1 + duration2;
-        float totalRotationDuration = rotationDuration1 + rotationDuration2;
+        // float totalDuration = duration1 + duration2;
+        // float totalRotationDuration = rotationDuration1 + rotationDuration2;
 
-        while (elapsedTime < Mathf.Max(totalDuration, totalRotationDuration))
-        {
-            float t1 = Mathf.Clamp01(elapsedTime / Mathf.Max(duration1, rotationDuration1)); // Normalize phase 1
-            float t2 = Mathf.Clamp01((elapsedTime - duration1) / Mathf.Max(duration2, rotationDuration2)); // Normalize phase 2
+        // while (elapsedTime < Mathf.Max(totalDuration, totalRotationDuration))
+        // {
+        //     float t1 = Mathf.Clamp01(elapsedTime / Mathf.Max(duration1, rotationDuration1)); // Normalize phase 1
+        //     float t2 = Mathf.Clamp01((elapsedTime - duration1) / Mathf.Max(duration2, rotationDuration2)); // Normalize phase 2
 
-            if (elapsedTime < duration1)
-            {
-                // Phase 1 movement and rotation
-                targetObject.transform.position = Vector3.Lerp(startPosition, beforeTargetPosition, t1);
-                targetObject.transform.rotation = Quaternion.Slerp(startRotation, targetRotation1, t1);
-            }
-            else
-            {
-                // Phase 2 movement and rotation
-                targetObject.transform.position = Vector3.Lerp(beforeTargetPosition, targetPosition, t2);
-                targetObject.transform.rotation = Quaternion.Slerp(targetRotation1, targetRotation2, t2);
-            }
+        //     if (elapsedTime < duration1)
+        //     {
+        //         // Phase 1 movement and rotation
+        //         targetObject.transform.position = Vector3.Lerp(startPosition, beforeTargetPosition, t1);
+        //         targetObject.transform.rotation = Quaternion.Slerp(startRotation, targetRotation1, t1);
+        //     }
+        //     else
+        //     {
+        //         // Phase 2 movement and rotation
+        //         targetObject.transform.position = Vector3.Lerp(beforeTargetPosition, targetPosition, t2);
+        //         targetObject.transform.rotation = Quaternion.Slerp(targetRotation1, targetRotation2, t2);
+        //     }
 
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
+        //     elapsedTime += Time.deltaTime;
+        //     yield return null;
+        // }
 
+
+        yield return StartCoroutine(MoveAlongBezier(targetObject, targetObject.transform.position, targetPosition, targetObject.transform.rotation, targetRotation2));
         // Ensure final values are set exactly
         targetObject.transform.position = targetPosition;
         targetObject.transform.rotation = targetRotation2;
